@@ -1,0 +1,25 @@
+specVersion: 0.0.1
+description: Origin is a protocol for creating peer-to-peer marketplaces using the Ethereum blockchain and IPFS.
+repository: https://github.com/graphprotocol/origin-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Example
+    network: mainnet
+    source:
+      address: ''
+      abi: Example
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.1
+      language: wasm/assemblyscript
+      file: ./src/mappings/example.ts
+      entities:
+        - Example
+      abis:
+        - name: Example
+          file: ./abis/Example.json
+      eventHandlers:
+        - event: Example()
+          handler: handleExample
