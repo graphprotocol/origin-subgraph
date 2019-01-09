@@ -1,3 +1,4 @@
+# - 0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 token address (most likely wont use)
 specVersion: 0.0.1
 description: Origin is a protocol for creating peer-to-peer marketplaces using the Ethereum blockchain and IPFS.
 repository: https://github.com/graphprotocol/origin-subgraph
@@ -5,21 +6,55 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Example
+    name: Marketplace
     network: mainnet
     source:
-      address: ''
-      abi: Example
+      address: '0x819Bb9964B6eBF52361F1ae42CF4831B921510f9'
+      abi: Marketplace
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.1
       language: wasm/assemblyscript
-      file: ./src/mappings/example.ts
+      file: ./src/mappings/marketplace.ts
       entities:
-        - Example
+        - Listing
+        - Offer
+        - IPFSListingData
+        - ListingExtraData
+        - OfferExtraData
+        - IPFSOfferData
+        - User
+        - AllowedAffiliates
+        - MarketplaceData
       abis:
-        - name: Example
-          file: ./abis/Example.json
+        - name: Marketplace
+          file: ./abis/Marketplace.json
       eventHandlers:
-        - event: Example()
-          handler: handleExample
+        - event: MarketplaceData(address,bytes32)
+          handler: handleMarketplaceData
+        - event: AffiliateAdded(address,bytes32)
+          handler: handleAffiliateAdded
+        - event: AffiliateRemoved(address,bytes32)
+          handler: handleAffiliateRemoved
+        - event: ListingCreated(address,uint256,bytes32)
+          handler: handleListingCreated
+        - event: ListingUpdated(address,uint256,bytes32)
+          handler: handleListingUpdated
+        - event: ListingWithdrawn(address,uint256,bytes32)
+          handler: handleListingWithdrawn
+        - event: ListingArbitrated(address,uint256,bytes32)
+          handler: handleListingarbitrated
+        - event: ListingData(address,uint256,bytes32)
+          handler: handleListingData
+        - event: OfferCreated(address,uint256,uint256,bytes32)
+          handler: handleOfferCreated
+        - event: OfferAccepted(address,uint256,uint256,bytes32)
+          handler: handleOfferAccepted
+        - event: OfferFundsAdded(address,uint256,uint256,bytes32)
+          handler: handleOfferFundsAdded
+        - event: OfferDisputed(address,uint256,uint256,bytes32)
+          handler: handleOfferDisputed
+        - event: OfferRuling(address,uint256,uint256,bytes32,uint256)
+          handler: handleOfferRuling
+        - event: OfferData(address,uint256,uint256,bytes32)
+          handler: handleOfferData
