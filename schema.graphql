@@ -43,9 +43,11 @@ type Listing @entity {
     id: ID!
     seller: Bytes!
     depositManager: Bytes!
+    ipfsHashes: [Bytes]! # multiple, from updates. TODO - might be moved into ipfsData
     offers: [Offer!]!
-    ipfsData: [IPFSListingData!]!
-    listingExtraData: [ListingExtraData!]!
+    ipfsData: [IPFSListingData!]! # the data read from IPFS. Includes extraData hashes
+    listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
+    status: String!
 
     # potential others from docs - listingType, category, subCategory, language, title, description, price, unitsTotal, OPTIONAL - media, commission, commissionPerUnit
 }
@@ -53,25 +55,25 @@ type Listing @entity {
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData
 type Offer @entity {
     id: ID!             # most likely a concatenation of the listing ID and the Offer location in the Offer[]
-    # NOTE - offets might have their own unique IDS
+    # NOTE - offers might have their own unique IDS
     value: BigInt!      # amount in eth or ERC20 token
     commission: BigInt! #
     refund: BigInt!     #
+    ipfsHashes: [Bytes]!
     currency: Bytes!    # currency of listing
-    buyer: Bytes!       #
+    buyer: Bytes!       # as in the person offering to buy
     affiliate: Bytes!   # address to send any commission
     arbitrator: Bytes!  # address that settles disputes
     finalizes: BigInt!  #
+    # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
     status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
     ipfsData: [IPFSOfferData!]!
     offerExtraData: [OfferExtraData!]!
+    disputer: String    # only set if it gets disputed by buyer of seller
+    ruling: String      # only set if it gets ruled
 
     # Derived from the events being emitted, not stoed within the contract
-    accepted: Boolean
-    withdrawn: Boolean
-    finalized: Boolean
-    inDispute: Boolean
-    disputeRuled: Boolean
+    eventStatus: String! # open, accepted, withdrawn, finalized, inDispute, disputeRuled
 
     # potential others from docs - listingType, unitsPurchased, totalPrice
 
@@ -86,6 +88,7 @@ type IPFSListingData @entity {
 # Extra data that is emitted as an event, not stored on ethereum
 type ListingExtraData @entity {
     id: ID!
+    listingID: Bytes!
     sender: Bytes!
     ipfsHash: Bytes!
 }
@@ -114,6 +117,7 @@ type User @entity {
 type AllowedAffiliates @entity {
     id: ID!
     affiliates: [Bytes!]!
+    ipfsHash: [Bytes!]!
 }
 
 # Just additional data that can be emitted by the marketplace contract, not stored in contract

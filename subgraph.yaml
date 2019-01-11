@@ -43,7 +43,7 @@ dataSources:
         - event: ListingWithdrawn(address,uint256,bytes32)
           handler: handleListingWithdrawn
         - event: ListingArbitrated(address,uint256,bytes32)
-          handler: handleListingarbitrated
+          handler: handleListingArbitrated
         - event: ListingData(address,uint256,bytes32)
           handler: handleListingData
         - event: OfferCreated(address,uint256,uint256,bytes32)
