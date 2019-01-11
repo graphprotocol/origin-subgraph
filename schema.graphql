@@ -42,10 +42,10 @@
 type Listing @entity {
     id: ID!
     seller: Bytes!
-    depositManager: Bytes!
-    ipfsHashes: [Bytes]! # multiple, from updates. TODO - might be moved into ipfsData
-    offers: [Offer!]!
-    ipfsData: [IPFSListingData!]! # the data read from IPFS. Includes extraData hashes
+    depositManager: Bytes
+    ipfsHashes: [Bytes!]! # multiple, from updates. TODO - might be moved into ipfsData
+    offers: [Offer!]! @derivedFrom(field: "listingID")
+    ipfsData: [IPFSListingData!]! @derivedFrom(field: "listingID")# the data read from IPFS. Includes extraData hashes
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
     status: String!
 
@@ -55,20 +55,20 @@ type Listing @entity {
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData
 type Offer @entity {
     id: ID!             # most likely a concatenation of the listing ID and the Offer location in the Offer[]
-    # NOTE - offers might have their own unique IDS
-    value: BigInt!      # amount in eth or ERC20 token
-    commission: BigInt! #
-    refund: BigInt!     #
-    ipfsHashes: [Bytes]!
-    currency: Bytes!    # currency of listing
+    listingID: String!
+    value: BigInt      # amount in eth or ERC20 token
+    commission: BigInt #
+    refund: BigInt     #
+    ipfsHashes: [Bytes!]!
+    currency: Bytes    # currency of listing
     buyer: Bytes!       # as in the person offering to buy
-    affiliate: Bytes!   # address to send any commission
-    arbitrator: Bytes!  # address that settles disputes
-    finalizes: BigInt!  #
+    affiliate: Bytes   # address to send any commission
+    arbitrator: Bytes  # address that settles disputes
+    finalizes: BigInt  #
     # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
-    status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
-    ipfsData: [IPFSOfferData!]!
-    offerExtraData: [OfferExtraData!]!
+    status: Int        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
+    ipfsData: [IPFSOfferData!]! @derivedFrom(field: "offerID")
+    offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
     disputer: String    # only set if it gets disputed by buyer of seller
     ruling: String      # only set if it gets ruled
 
@@ -76,26 +76,28 @@ type Offer @entity {
     eventStatus: String! # open, accepted, withdrawn, finalized, inDispute, disputeRuled
 
     # potential others from docs - listingType, unitsPurchased, totalPrice
-
+    extraOfferCount: BigInt!
 }
 
 # From IPFS, not stored on ethereum
 type IPFSListingData @entity {
     id: ID!
+    listingID: String!
     # TODO
 }
 
 # Extra data that is emitted as an event, not stored on ethereum
 type ListingExtraData @entity {
     id: ID!
-    listingID: Bytes!
+    listingID: String!
     sender: Bytes!
     ipfsHash: Bytes!
 }
 
 # Extra data that is emitted as an event, not stored on ethereum
 type OfferExtraData @entity {
-    id: ID! # offerID - the concatenation created in Offer
+    id: ID!
+    offerID: String!
     sender: Bytes!
     ipfsHash: Bytes!
 }
@@ -103,6 +105,7 @@ type OfferExtraData @entity {
 # From IPFS, not on the contract
 type IPFSOfferData @entity {
     id: ID!
+    offerID: String!
     # TODO
 }
 
@@ -114,7 +117,7 @@ type User @entity {
 
 # might need, would be a list of addresses, that are valid, and a placeholder ID
 # EVENTS - AffiliateAdded, AffiliateRemoved
-type AllowedAffiliates @entity {
+type AllowedAffiliate @entity {
     id: ID!
     affiliates: [Bytes!]!
     ipfsHash: [Bytes!]!
