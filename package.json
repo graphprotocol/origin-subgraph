@@ -5,13 +5,19 @@
   "license": "MIT",
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
+    "create-subgraph": "graph create origin-subgraph --node http://127.0.0.1:8020",
+    "create-hosted": "graph create Origin --node https://api.thegraph.com/deploy/",
+    "create-staging": "graph create Origin --node https://api.staging.thegraph.com/deploy/",
     "build": "graph build subgraph.yaml",
     "build-ipfs": "graph build --ipfs /ip4/127.0.0.1/tcp/5001 subgraph.yaml",
     "build-wast": "graph build -t wast subgraph.yaml",
-    "deploy": "graph deploy subgraph.yaml --ipfs /ip4/127.0.0.1/tcp/5001 --node http://127.0.0.1:8020 --subgraph-name origin-subgraph"
+    "deploy": "graph deploy origin-subgraph --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
+    "deploy-hosted": "graph deploy --debug davekaj/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token 60e6e81070b149078e52081cdca3991d",
+    "deploy-staging": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token 28b60cfc888f427a9be7350950b9d9f3"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.5.0",
-    "@graphprotocol/graph-ts": "^0.5.0"
+    "@graphprotocol/graph-cli": "https://github.com/graphprotocol/graph-cli",
+    "@graphprotocol/graph-ts": "https://github.com/graphprotocol/graph-ts"
   }
 }
+
