@@ -15,6 +15,8 @@ import {
 import {
   handleOfferCreated,
   handleOfferAccepted,
+  handleOfferFinalized,
+  handleOfferWithdrawn,
   handleOfferFundsAdded,
   handleOfferDisputed,
   handleOfferRuling,
@@ -34,6 +36,8 @@ export {
 
   handleOfferCreated,
   handleOfferAccepted,
+  handleOfferFinalized,
+  handleOfferWithdrawn,
   handleOfferFundsAdded,
   handleOfferDisputed,
   handleOfferRuling,

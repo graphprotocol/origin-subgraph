@@ -173,7 +173,7 @@ type MarketplaceData @entity {
 # this would probably make the ClaimVerifer a single address on mainnet, and the claims Multi-address
 # also note, the Claim Verifer has no account storage, it just emits events that a claim is Valid
 
-# EVENTS - TODO
+# EVENTS -
 # do we need:
 # event IdentityUpdated, IdentityDeleted
 

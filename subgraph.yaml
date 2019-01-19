@@ -50,6 +50,10 @@ dataSources:
           handler: handleOfferCreated
         - event: OfferAccepted(address,uint256,uint256,bytes32)
           handler: handleOfferAccepted
+        - event: OfferFinalized(address,uint256,uint256,bytes32)
+          handler: handleOfferFinalized
+        - event: OfferWithdrawn(address,uint256,uint256,bytes32)
+          handler: handleOfferWithdrawn
         - event: OfferFundsAdded(address,uint256,uint256,bytes32)
           handler: handleOfferFundsAdded
         - event: OfferDisputed(address,uint256,uint256,bytes32)

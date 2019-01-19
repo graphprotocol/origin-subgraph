@@ -13,6 +13,8 @@ import {
 import {
   OfferCreated,
   OfferAccepted,
+  OfferFinalized,
+  OfferWithdrawn,
   OfferFundsAdded,
   OfferDisputed,
   OfferRuling,
@@ -119,7 +121,6 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.save()
 }
 
-
 export function handleOfferAccepted(event: OfferAccepted): void {
   let id = event.params.offerID.toHex()
   let offerID = event.params.listingID.toHex().concat("-".concat(id))
@@ -157,17 +158,42 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   listing.save()
 }
 
+export function handleOfferFinalized(event: OfferFinalized): void {
+  // TODO
+}
+
+export function handleOfferWithdrawn(event: OfferWithdrawn): void {
+  // TODO
+}
+
 // NOTE  - not emitted on mainnet yet, so can't test
 export function handleOfferFundsAdded(event: OfferFundsAdded): void {
   let id = event.params.offerID.toHex()
   let offerID = event.params.listingID.toHex().concat("-".concat(id))
   let offer = Offer.load(offerID)
+
+  // Push to array to store IPFS hash (in bytes)
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
 
-  //tODO direct call contract
-  // todo - read ipfs data
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
+
+  // Direct call the contract for offer finalizes and offer status
+  let smartContract = Marketplace.bind(event.address)
+  let storageOffer = smartContract.offers(event.params.listingID, event.params.offerID)
+  offer.value = storageOffer.value0
+  offer.save()
+
+  // Note - no need to read IPFS hashes, since all they do is indicate funds added
+  // and it is probably always the same hash. But this event has never been emitted on
+  // mainnet, so
+  // no way to see what the typical hash is
 
   offer.save()
 }
@@ -176,18 +202,29 @@ export function handleOfferDisputed(event: OfferDisputed): void {
   let id = event.params.offerID.toHex()
   let offerID = event.params.listingID.toHex().concat("-".concat(id))
   let offer = Offer.load(offerID)
+
+  // Push to array to store IPFS hash (in bytes)
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
+  offer.status = 3 // we can just set three, instead of calling contract directly
+
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
 
   if (event.params.party == offer.buyer) {
     offer.disputer = "buyer"
   } else {
     offer.disputer = "seller"
   }
-
-  //tODO direct call contract
-  // todo - read ipfs data
+  // Note - no need to read IPFS hashes, since all they do is indicate a dispute, and these
+  // all share the same hashes, which are:
+      // QmNbryRJbJpYPj2VAihcUD9cdLUv1o1DtG7BCcxVaBeUqf
+      // QmPuYJbNjauKLysq2gnAMAoHxn5AHfcBFRQSktG2ARvAYs
 
   offer.save()
 }
