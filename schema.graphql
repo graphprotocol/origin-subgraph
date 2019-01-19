@@ -15,9 +15,13 @@ type Listing @entity {
 }
 
 # From IPFS, not stored on ethereum
+# Note that a user can (and it is shown when querying send two different listings, with the
+# exact same data, which will result in a listing that shares the IPFSListingData. This is okau
+# It will end up overwriting it in the subgraph, but that is fine because it is the exact same
 type IPFSListingData @entity {
     id: ID!              # the IPFS hash
     listingID: String!   # used to derive the relationship
+    blockNumber: BigInt! # helps with identifying Listing Updates, among other things
 
     # Required Fields
     schemaId: String
@@ -37,30 +41,30 @@ type IPFSListingData @entity {
     media: [Media!]! @derivedFrom(field: "listing")
 }
 
-type IPFSListingCurrency @entity {
-    id: ID! # the IPFS Hash
-    amount: String!
-    currency: String!
-}
+        type IPFSListingCurrency @entity {
+            id: ID! # the IPFS Hash
+            amount: String!
+            currency: String!
+        }
 
-type IPFSListingCommission @entity {
-    id: ID! # the IPFS Hash
-    amount: String!
-    currency: String!
-}
+        type IPFSListingCommission @entity {
+            id: ID! # the IPFS Hash
+            amount: String!
+            currency: String!
+        }
 
-type IPFSListingCommissionPerUnit @entity {
-    id: ID! # the IPFS Hash
-    amount: String!
-    currency: String!
-}
+        type IPFSListingCommissionPerUnit @entity {
+            id: ID! # the IPFS Hash
+            amount: String!
+            currency: String!
+        }
 
-type Media @entity {
-    id: ID!                 # the IPFS Hash, concatenated with the location in the array
-    url: String!
-    contentType: String!
-    listing: String!
-}
+        type Media @entity {
+            id: ID!                 # the IPFS Hash, concatenated with the location in the array
+            url: String!
+            contentType: String!
+            listing: String!
+        }
 
 # Extra data that is emitted as an event, not stored on ethereum
 type ListingExtraData @entity {
