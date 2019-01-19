@@ -99,18 +99,14 @@ type Offer @entity {
     # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
     status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
 
+    disputer: String    # extra field, so we can store if buyer or seller started dispute
+    ruling: BigInt      # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
+
     ipfsHashesBytes: [Bytes!]!
     ipfsHashesBase58: [String!]!
 
-
     ipfsData: [IPFSOfferData!]! @derivedFrom(field: "offerID")
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
-    disputer: String    # only set if it gets disputed by buyer of seller
-    ruling: String      # only set if it gets ruled
-
-    # Derived from the events being emitted, not stoed within the contract
-    # TODO - delete duplicate storing of status , just use theirs
-    eventStatus: String! # open, accepted, withdrawn, finalized, inDispute, disputeRuled
 }
 
 # From IPFS, not on the contract

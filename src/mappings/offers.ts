@@ -37,7 +37,6 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.ipfsHashesBytes = []
   offer.offerExtraData = []
   offer.ipfsData = []
-  offer.eventStatus = "open"
 
   // Create array to store all related IPFS hashes (in hex)
   let ipfsArray = offer.ipfsHashesBytes
@@ -130,7 +129,6 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
-  offer.eventStatus = "accepted"
 
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
@@ -202,17 +200,7 @@ export function handleOfferRuling(event: OfferRuling): void {
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
-
-  if (event.params.ruling == BigInt.fromI32(0)) {
-    offer.ruling = "Seller"
-  } else if (event.params.ruling == BigInt.fromI32(1)) {
-    offer.ruling = "Buyer"
-  } else if (event.params.ruling == BigInt.fromI32(2)) {
-    offer.ruling = "Com + Seller"
-  } else if (event.params.ruling == BigInt.fromI32(3)) {
-    offer.ruling = "Com + Buyer"
-  }
-
+  offer.ruling = event.params.ruling
 
   //tODO direct call contract
   // todo - read ipfs data
@@ -231,7 +219,6 @@ export function handleOfferData(event: OfferData): void {
     offer.ipfsHashesBytes = new Array<Bytes>()
     offer.offerExtraData = []
     offer.ipfsData = []
-    offer.eventStatus = "open"
     offer.save()
   }
 
