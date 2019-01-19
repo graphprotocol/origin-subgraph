@@ -192,10 +192,7 @@ export function handleOfferFundsAdded(event: OfferFundsAdded): void {
 
   // Note - no need to read IPFS hashes, since all they do is indicate funds added
   // and it is probably always the same hash. But this event has never been emitted on
-  // mainnet, so
-  // no way to see what the typical hash is
-
-  offer.save()
+  // mainnet, so no way to see what the typical hash is
 }
 
 export function handleOfferDisputed(event: OfferDisputed): void {
@@ -229,20 +226,41 @@ export function handleOfferDisputed(event: OfferDisputed): void {
   offer.save()
 }
 
+// Note - if handler runs, the offer gets deleted off the blockchain
+// but we choose not to delete it
 export function handleOfferRuling(event: OfferRuling): void {
   let id = event.params.offerID.toHex()
   let offerID = event.params.listingID.toHex().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
+  // Push to array to store IPFS hash (in bytes)
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
   offer.ruling = event.params.ruling
 
-  //tODO direct call contract
-  // todo - read ipfs data
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
 
+  // Direct call the contract for offer finalizes and offer status
+  let smartContract = Marketplace.bind(event.address)
+  let storageOffer = smartContract.offers(event.params.listingID, event.params.offerID)
+  offer.refund = storageOffer.value2
   offer.save()
+
+  let storageListing = smartContract.listings(event.params.listingID)
+  let listing = Listing.load(event.params.listingID.toHex())
+  listing.deposit = storageListing.value1
+  listing.save()
+
+  // Note - no need to read IPFS hashes, since all they do is indicate a ruling, and these
+  // all share the same hashes, which are:
+      // QmXMNjzcp6JBT3oaXLCWJp4xXfWg2Egifc5bWLJbPY377t
+      // QmaWYrgrQCgSesPb5y8bPpNFCazipFYtWfK4HuA3WAGZVa
 }
 
 export function handleOfferData(event: OfferData): void {
