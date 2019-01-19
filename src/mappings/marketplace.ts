@@ -1,4 +1,11 @@
-import {BigInt, Value, Bytes} from '@graphprotocol/graph-ts'
+import {
+  BigInt,
+  Bytes,
+  ipfs,
+  json,
+  ByteArray,
+} from '@graphprotocol/graph-ts'
+
 import {
   MarketplaceData as MarketplaceDataEvent,
   AffiliateAdded,
@@ -14,6 +21,7 @@ import {
   OfferDisputed,
   OfferRuling,
   OfferData,
+  Marketplace
 } from '../types/Marketplace/Marketplace'
 
 import {
@@ -26,7 +34,10 @@ import {
   User,
   AllowedAffiliate,
   MarketplaceData,
-
+  IPFSListingCurrency,
+  IPFSListingCommission,
+  IPFSListingCommissionPerUnit,
+  Media,
 } from '../types/schema'
 
 // NOTE  - not emitted on mainnet yet, so can't test
@@ -73,41 +84,135 @@ export function handleAffiliateRemoved(event: AffiliateRemoved): void {
 }
 
 export function handleListingCreated(event: ListingCreated): void {
+  // Create the Listing
   let id = event.params.listingID.toHex()
   let listing = new Listing(id)
-  listing.ipfsHashes = new Array<Bytes>()
   listing.offers = []
   listing.ipfsData = []
   listing.seller = event.params.party
   listing.status = "open"
+  listing.blockNumber = event.block.number
 
-  let ipfsArray = listing.ipfsHashes
+  // Create array to store all related IPFS hashes (in hex)
+  listing.ipfsBytesHashes = []
+  let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsHashes = ipfsArray
+  listing.ipfsBytesHashes = ipfsArray
 
-  //TODO direct call teh contract for deposit and depositManager, if those arent available in the IPFS data
-  //TODO read the IPFS data
+  // Create array to store all related IPFS hashes (in base58)
+  listing.ipfsBase58Hashes = []
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = listing.ipfsBase58Hashes
+  base58Array.push(base58Hash)
+  listing.ipfsBase58Hashes = base58Array
+
+  // Direct call the contract for deposit and depositManager
+  let smartContract = Marketplace.bind(event.address)
+  let storageListing = smartContract.listings(event.params.listingID)
+  listing.deposit = storageListing.value1
+  listing.depositManager = storageListing.value2
+
+  //////////////// JSON PARSING BELOW /////////////////////////////////////
+
+  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  let pinnedHashes = new Array<string>()
+  pinnedHashes.push('QmeUWRKoqSKK9qyyzu3VLFVGmjpUmfgLiYpeYnu5jDzHvB')
+  pinnedHashes.push('QmPvmW469mYPXaBuvbEHB66MY7JAYGPvBncfESMourCKWW')
+  pinnedHashes.push('QmdqtRB69x4KK2j8w5mZkVsZ1y7WShRXwWKS4jSBdQqJnx')
+  pinnedHashes.push('QmXRBSQFG6bNYtu6znpMyrFeZ5hGwxov7Kew8v8TvJqkhx')
+  pinnedHashes.push('QmVKp9AHksCNdaHQKbMqetNVXUG3KVhFiASabXzogo2xD8')
+  pinnedHashes.push('QmQFPod7GFneL7FrmZTxC6jr2P5mKv6RrW8GSQ7fSz2mdi')
+
+  // Only Run ipfs.cat() if it is a hardcoded base58 hash
+  let i = pinnedHashes.indexOf(base58Hash)
+  if (i != -1) {
+    let getIPFSData = ipfs.cat(base58Hash)
+    let data = json.fromBytes(getIPFSData).toObject()
+    let ipfsListingData = new IPFSListingData(base58Hash)
+    ipfsListingData.listingID = id
+    ipfsListingData.schemaId = data.get('schemaId').toString()
+    ipfsListingData.listingType = data.get('listingType').toString()
+    ipfsListingData.category = data.get('category').toString()
+    ipfsListingData.subCategory = data.get('subCategory').toString()
+    ipfsListingData.language = data.get('language').toString()
+    ipfsListingData.title = data.get('title').toString()
+    ipfsListingData.description = data.get('description').toString()
+    ipfsListingData.unitsTotal = data.get('unitsTotal').toBigInt()
+    ipfsListingData.media = []
+
+    // Creating Price
+    ipfsListingData.price = base58Hash
+    let priceObject = data.get('price').toObject()
+    let listingCurrency = new IPFSListingCurrency(base58Hash)
+    listingCurrency.amount = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already coming in with kind STRING. so for now we store it as a string too
+    listingCurrency.currency = priceObject.get('currency').toString()
+    listingCurrency.save()
+
+    // Creating Commission, if it exists
+    let c = data.get('commission')
+    if (c != null) {
+      ipfsListingData.commission = base58Hash
+      let commissionObject = c.toObject()
+      let commission = new IPFSListingCommission(base58Hash)
+      commission.amount = commissionObject.get('amount').toString()
+      commission.currency = commissionObject.get('currency').toString()
+      commission.save()
+    }
+
+    // Creating CommissionPerUnit, if it exists
+    let cpu = data.get('commissionPerUnit')
+    if (cpu  != null) {
+      ipfsListingData.commissionPerUnit = base58Hash
+      let cpuObject = cpu.toObject()
+      let cpuEntity = new IPFSListingCommissionPerUnit(base58Hash)
+      cpuEntity.amount = cpuObject.get('amount').toString()
+      cpuEntity.currency = cpuObject.get('currency').toString()
+      cpuEntity.save()
+    }
+
+    // Creating dappSchemaId, if it exists
+    let dappSchemaId = data.get('dappSchemaId')
+    if (dappSchemaId != null){
+      ipfsListingData.dappSchemaId = dappSchemaId.toString()
+    }
+
+    // Creating the media array, if it exists
+    let media = data.get('media')
+    if (media != null){
+      let mediaArray = media.toArray()
+      for (let i = 0; i <mediaArray.length; i++){
+        let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
+        let mediaEntity = new Media(mediaID)
+        mediaEntity.listing = base58Hash
+        let url = mediaArray[i].toObject().get('url').toString()
+        let contentType = mediaArray[i].toObject().get('contentType').toString()
+        mediaEntity.url = url
+        mediaEntity.contentType = contentType
+        mediaEntity.save()
+      }
+    }
+
+    ipfsListingData.save()
+  }
 
   listing.save()
-
-
-  let ipfsID = createIPFSDataID(id, listing.ipfsHashes.length) // relateing to ipfs hashed, because I dont think you can get length from the derivedFrom length
-  let ipfsListingData = new IPFSListingData(ipfsID)
-  ipfsListingData.listingID = id
-  ipfsListingData.save()
-
-
 }
 
 
+// TODO: delete this amongst all functions, it is wrong
+// let ipfsID = createIPFSDataID(id, listing.ipfsBytesHashes.length) // relateing to ipfs hashed, because I dont think you can get length from the derivedFrom length
+// let ipfsListingData = new IPFSListingData(ipfsID)
+// ipfsListingData.listingID = id
+// ipfsListingData.save()
 
 export function handleListingUpdated(event: ListingUpdated): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
 
-  let ipfsArray = listing.ipfsHashes
+  let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsHashes = ipfsArray
+  listing.ipfsBytesHashes = ipfsArray
 
   //TODO direct call the contract for deposit
   // todo - read the ipfs data
@@ -124,9 +229,9 @@ export function handleListingUpdated(event: ListingUpdated): void {
 export function handleListingWithdrawn(event: ListingWithdrawn): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
-  let ipfsArray = listing.ipfsHashes
+  let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsHashes = ipfsArray
+  listing.ipfsBytesHashes = ipfsArray
   listing.status = "withdrawn"
 
   //TODO direct call the contract for deposit
@@ -146,9 +251,9 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
 
-  let ipfsArray = listing.ipfsHashes
+  let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsHashes = ipfsArray
+  listing.ipfsBytesHashes = ipfsArray
   listing.status = "arbitrated"
 
   //TODO direct call the contract for deposit
@@ -167,12 +272,12 @@ export function handleListingData(event: ListingData): void {
   let listing = Listing.load(id)
 
   // changetype comes from assembly script, and is recognized by the ASC
-  let extraDataID =  changetype<string>(listing.listingExtraData.length as i32)
+  let extraDataID = changetype<string>(listing.listingExtraData.length as i32)
 
   let extraData = new ListingExtraData(extraDataID)
   extraData.ipfsHash = event.params.ipfsHash
   extraData.sender = event.params.party
-  extraData.listingID =  id
+  extraData.listingID = id
 
 
   extraData.save()
@@ -202,8 +307,6 @@ export function handleOfferCreated(event: OfferCreated): void {
   let ipfsOfferData = new IPFSOfferData(ipfsID)
   ipfsOfferData.offerID = offerID
   ipfsOfferData.save()
-
-
 
 
 }
@@ -284,11 +387,11 @@ export function handleOfferRuling(event: OfferRuling): void {
 
   if (event.params.ruling == BigInt.fromI32(0)) {
     offer.ruling = "Seller"
-  } else if (event.params.ruling == BigInt.fromI32(1)){
+  } else if (event.params.ruling == BigInt.fromI32(1)) {
     offer.ruling = "Buyer"
-  } else if (event.params.ruling == BigInt.fromI32(2)){
+  } else if (event.params.ruling == BigInt.fromI32(2)) {
     offer.ruling = "Com + Seller"
-  } else if (event.params.ruling == BigInt.fromI32(3)){
+  } else if (event.params.ruling == BigInt.fromI32(3)) {
     offer.ruling = "Com + Buyer"
   }
 
@@ -322,7 +425,7 @@ export function handleOfferData(event: OfferData): void {
   }
 
   // changetype comes from assembly script, and is recognized by the ASC
-  let extraDataID =  offerID.concat(offer.extraOfferCount.toString())
+  let extraDataID = offerID.concat(offer.extraOfferCount.toString())
   offer.extraOfferCount = offer.extraOfferCount.plus(BigInt.fromI32(1))
   offer.save()
 
@@ -336,9 +439,36 @@ export function handleOfferData(event: OfferData): void {
 
 // HELPERS
 
-function createIPFSDataID(entityID: string, ipfsDataLength: number):  string{
+
+// I DONT THINK THIS IS NEEDED, EACH IPFS DATA CAN JUST USE THE  IPFS HASH AS THE ID...
+
+function createIPFSDataID(entityID: string, ipfsDataLength: number): string {
   // let ipfsID =  changetype<string>(ipfsDataLength as i32)
   let ipfsID = BigInt.fromI32(ipfsDataLength as i32).toString()
   let id = entityID.concat("-").concat(ipfsID)
   return id
+}
+
+// Helper for concatenating two byte arrays
+function concat(a: ByteArray, b: ByteArray): ByteArray {
+  let out = new Uint8Array(a.length + b.length)
+  for (let i = 0; i < a.length; i++) {
+    out[i] = a[i]
+  }
+  for (let j = 0; j < b.length; j++) {
+    out[a.length + j] = b[j]
+  }
+  return out as Bytes
+}
+
+// Helper adding 0x12 and 0x20 to make the proper ipfs hash
+// the returned bytes32 is so [0,31]
+function addQm(a: ByteArray): ByteArray {
+  let out = new Uint8Array(34)
+  out[0] = 0x12
+  out[1] = 0x20
+  for (let i = 0; i < 32; i++) {
+    out[i + 2] = a[i]
+  }
+  return out as ByteArray
 }

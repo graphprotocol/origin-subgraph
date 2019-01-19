@@ -1,55 +1,73 @@
-# it appears a claim can be valid or invalid, but that an entire claim is its own address. kinda what yaniv was talked about.
-# this would probably make the ClaimVerifer a single address on mainnet, and the claims Multi-address
-# also note, the Claim Verifer has no account storage, it just emits events that a claim is Valid
-
-# EVENTS - TODO
-    # do we need:
-        # event IdentityUpdated, IdentityDeleted
-
-## events ClaimAdded, ClaimRemoved , ClaimValid, ClaimInvalid
-#type Claim @entity {
-#    id: ID!             # claimID, used to store them in a mapping
-#    topic: BigInt!      # number representing topic of claim (biometric, residence, etc)
-#    scheme: BigInt!     # scheme with which this claim SHOULD be verified. or ECDSA, RSA, etc
-#    issuer: Bytes!      # The issuers identity contract address, or the addr used to sign signature
-#    signature: Bytes!   # proof that the claim issuer issued a claim of topic for this identity
-#    data: Bytes!        # the hash of the claim data, sitting in another location
-#    uri: String!        # the location of the claim (IPFS)
-#    claimValid: Boolean #
-#}
-#
-## a proxy contact for key management and execution
-#type KeyHolderData @entity {
-#    id: ID! # i think each key is its own contract address, thus making this a contract address
-#    executionNone: BigInt!
-#    keys: [Bytes32!]! # TODO - might be wrong
-#    executions: [Executions!]!
-#}
-#
-#type Key @entity {
-#    id: ID! # key
-#    keyType: BigInt!
-#    purposes: [BigInt!]!
-#}
-#
-#type Execution @entity {
-#
-#}
-
-# I dont htink I need anything from The above.........
-
 # EVENTS - ListingCreated, ListingUpdated, ListingWithdrawn, ListingArbitrated,
 type Listing @entity {
     id: ID!
+    blockNumber: BigInt!
     seller: Bytes!
-    depositManager: Bytes
-    ipfsHashes: [Bytes!]! # multiple, from updates. TODO - might be moved into ipfsData
+    depositManager: Bytes!
+    deposit: BigInt!
+    ipfsBytesHashes: [Bytes!]! # multiple, from updates. TODO - might be moved into ipfsData
+    ipfsBase58Hashes: [String!]!
     offers: [Offer!]! @derivedFrom(field: "listingID")
     ipfsData: [IPFSListingData!]! @derivedFrom(field: "listingID")# the data read from IPFS. Includes extraData hashes
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
     status: String!
 
-    # potential others from docs - listingType, category, subCategory, language, title, description, price, unitsTotal, OPTIONAL - media, commission, commissionPerUnit
+}
+
+# From IPFS, not stored on ethereum
+type IPFSListingData @entity {
+    id: ID!              # the IPFS hash
+    listingID: String!   # used to derive the relationship
+
+    # Required Fields
+    schemaId: String
+    listingType: String
+    category: String
+    subCategory: String
+    language: String
+    title: String
+    description: String
+    unitsTotal: BigInt
+    price: IPFSListingCurrency
+
+    # Optional Fields
+    commission: IPFSListingCommission
+    commissionPerUnit: IPFSListingCommissionPerUnit
+    dappSchemaId: String
+    media: [Media!]! @derivedFrom(field: "listing")
+}
+
+type IPFSListingCurrency @entity {
+    id: ID! # the IPFS Hash
+    amount: String!
+    currency: String!
+}
+
+type IPFSListingCommission @entity {
+    id: ID! # the IPFS Hash
+    amount: String!
+    currency: String!
+}
+
+type IPFSListingCommissionPerUnit @entity {
+    id: ID! # the IPFS Hash
+    amount: String!
+    currency: String!
+}
+
+type Media @entity {
+    id: ID!                 # the IPFS Hash, concatenated with the location in the array
+    url: String!
+    contentType: String!
+    listing: String!
+}
+
+# Extra data that is emitted as an event, not stored on ethereum
+type ListingExtraData @entity {
+    id: ID!
+    listingID: String!
+    sender: Bytes!
+    ipfsHash: Bytes!
 }
 
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData
@@ -79,20 +97,6 @@ type Offer @entity {
     extraOfferCount: BigInt!
 }
 
-# From IPFS, not stored on ethereum
-type IPFSListingData @entity {
-    id: ID!
-    listingID: String!
-    # TODO
-}
-
-# Extra data that is emitted as an event, not stored on ethereum
-type ListingExtraData @entity {
-    id: ID!
-    listingID: String!
-    sender: Bytes!
-    ipfsHash: Bytes!
-}
 
 # Extra data that is emitted as an event, not stored on ethereum
 type OfferExtraData @entity {
@@ -129,3 +133,42 @@ type MarketplaceData @entity {
     id: ID! #ipfs hash
     party: Bytes!
 }
+
+
+# it appears a claim can be valid or invalid, but that an entire claim is its own address. kinda what yaniv was talked about.
+# this would probably make the ClaimVerifer a single address on mainnet, and the claims Multi-address
+# also note, the Claim Verifer has no account storage, it just emits events that a claim is Valid
+
+# EVENTS - TODO
+# do we need:
+# event IdentityUpdated, IdentityDeleted
+
+## events ClaimAdded, ClaimRemoved , ClaimValid, ClaimInvalid
+#type Claim @entity {
+#    id: ID!             # claimID, used to store them in a mapping
+#    topic: BigInt!      # number representing topic of claim (biometric, residence, etc)
+#    scheme: BigInt!     # scheme with which this claim SHOULD be verified. or ECDSA, RSA, etc
+#    issuer: Bytes!      # The issuers identity contract address, or the addr used to sign signature
+#    signature: Bytes!   # proof that the claim issuer issued a claim of topic for this identity
+#    data: Bytes!        # the hash of the claim data, sitting in another location
+#    uri: String!        # the location of the claim (IPFS)
+#    claimValid: Boolean #
+#}
+#
+## a proxy contact for key management and execution
+#type KeyHolderData @entity {
+#    id: ID! # i think each key is its own contract address, thus making this a contract address
+#    executionNone: BigInt!
+#    keys: [Bytes32!]! # TODO - might be wrong
+#    executions: [Executions!]!
+#}
+#
+#type Key @entity {
+#    id: ID! # key
+#    keyType: BigInt!
+#    purposes: [BigInt!]!
+#}
+#
+#type Execution @entity {
+#
+#}
