@@ -5,10 +5,7 @@ import {
   json,
 } from '@graphprotocol/graph-ts'
 
-import {
-  addQm,
-  numberToString
-}  from "./origin";
+import {addQm}  from "./origin";
 
 import {
   ListingCreated,
@@ -30,16 +27,16 @@ import {
   Media,
 } from '../types/schema'
 
-// TODO - change listingID from toHex() to toString()
 export function handleListingCreated(event: ListingCreated): void {
   // Create the Listing
-  let id = event.params.listingID.toHex()
+  let id = event.params.listingID.toString()
   let listing = new Listing(id)
   listing.offers = []
   listing.ipfsData = []
   listing.seller = event.params.party
   listing.status = "created"
   listing.blockNumber = event.block.number
+  listing.extraDataCount = 0
 
   // Create array to store all related IPFS hashes (in hex)
   listing.ipfsBytesHashes = []
@@ -158,7 +155,7 @@ export function handleListingCreated(event: ListingCreated): void {
 // This is treated as a full update to the Listing, as we are unable to tell which fields
 // were updated based on just on the IPFS hash
 export function handleListingUpdated(event: ListingUpdated): void {
-  let id = event.params.listingID.toHex()
+  let id = event.params.listingID.toString()
   let listing = Listing.load(id)
 
   // Direct call the contract for deposit and depositManager
@@ -273,7 +270,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
 }
 
 export function handleListingWithdrawn(event: ListingWithdrawn): void {
-  let id = event.params.listingID.toHex()
+  let id = event.params.listingID.toString()
   let listing = Listing.load(id)
   listing.status = "withdrawn"
 
@@ -300,7 +297,7 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
 // Note  - not emitted on mainnet yet, so can't test
 // Emitted from function sendDeposit(), which allows depositManger to send deposit
 export function handleListingArbitrated(event: ListingArbitrated): void {
-  let id = event.params.listingID.toHex()
+  let id = event.params.listingID.toString()
   let listing = Listing.load(id)
   listing.status = "arbitrated"
 
@@ -330,10 +327,11 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
 // Extra data that is emitted as an event, not stored on ethereum
 // Note - not emitted on mainnet yet, so can't test
 export function handleListingData(event: ListingData): void {
-  let id = event.params.listingID.toHex()
+  let id = event.params.listingID.toString()
   let listing = Listing.load(id)
 
-  let extraDataID = numberToString(listing.listingExtraData.length) // TODO - THIS WONT WORK, BEACUASE THERE IS NO REAL LENGHT ON THE DERIVED FROM FIELD. MUST MAKE AN EXTRA COUNT LENGTH. the function numberToString can be deleted
+  // conversions required for ASC
+  let extraDataID = id.concat('-').concat(BigInt.fromI32(listing.extraDataCount).toString())
   let extraData = new ListingExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
@@ -341,6 +339,8 @@ export function handleListingData(event: ListingData): void {
   extraData.ipfsHashBytes = event.params.ipfsHash
   extraData.sender = event.params.party
   extraData.listingID = id
-
   extraData.save()
+
+  listing.extraDataCount = listing.extraDataCount + 1
+  listing.save()
 }

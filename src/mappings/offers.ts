@@ -5,10 +5,7 @@ import {
   json,
 } from '@graphprotocol/graph-ts'
 
-import {
-  addQm,
-  numberToString
-} from "./origin";
+import {addQm} from "./origin";
 
 import {
   OfferCreated,
@@ -31,14 +28,15 @@ import {
 
 export function handleOfferCreated(event: OfferCreated): void {
   // Create the offering
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = new Offer(offerID)
-  offer.listingID = event.params.listingID.toHex()
+  offer.listingID = event.params.listingID.toString()
   offer.buyer = event.params.party
   offer.ipfsHashesBytes = []
   offer.offerExtraData = []
   offer.ipfsData = []
+  offer.extraDataCount = 0
 
   // Create array to store all related IPFS hashes (in hex)
   let ipfsArray = offer.ipfsHashesBytes
@@ -122,8 +120,8 @@ export function handleOfferCreated(event: OfferCreated): void {
 }
 
 export function handleOfferAccepted(event: OfferAccepted): void {
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
   // Push to array to store IPFS hash (in bytes)
@@ -151,7 +149,7 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   offer.save()
 
   // Direct call the contract to update listing deposit
-  let listingID = event.params.listingID.toHex()
+  let listingID = event.params.listingID.toString()
   let listing = Listing.load(listingID)
   let storageListing = smartContract.listings(event.params.listingID)
   listing.deposit = storageListing.value1
@@ -168,8 +166,8 @@ export function handleOfferWithdrawn(event: OfferWithdrawn): void {
 
 // NOTE  - not emitted on mainnet yet, so can't test
 export function handleOfferFundsAdded(event: OfferFundsAdded): void {
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
   // Push to array to store IPFS hash (in bytes)
@@ -196,8 +194,8 @@ export function handleOfferFundsAdded(event: OfferFundsAdded): void {
 }
 
 export function handleOfferDisputed(event: OfferDisputed): void {
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
   // Push to array to store IPFS hash (in bytes)
@@ -229,8 +227,8 @@ export function handleOfferDisputed(event: OfferDisputed): void {
 // Note - if handler runs, the offer gets deleted off the blockchain
 // but we choose not to delete it
 export function handleOfferRuling(event: OfferRuling): void {
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
   // Push to array to store IPFS hash (in bytes)
@@ -253,7 +251,7 @@ export function handleOfferRuling(event: OfferRuling): void {
   offer.save()
 
   let storageListing = smartContract.listings(event.params.listingID)
-  let listing = Listing.load(event.params.listingID.toHex())
+  let listing = Listing.load(event.params.listingID.toString())
   listing.deposit = storageListing.value1
   listing.save()
 
@@ -264,8 +262,8 @@ export function handleOfferRuling(event: OfferRuling): void {
 }
 
 export function handleOfferData(event: OfferData): void {
-  let id = event.params.offerID.toHex()
-  let offerID = event.params.listingID.toHex().concat("-".concat(id))
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
   // Odd that this is needed. You can make OfferData before an OfferCreated
@@ -274,10 +272,12 @@ export function handleOfferData(event: OfferData): void {
     offer.ipfsHashesBytes = new Array<Bytes>()
     offer.offerExtraData = []
     offer.ipfsData = []
+    offer.extraDataCount = 0
     offer.save()
   }
 
-  let extraDataID = numberToString(offer.offerExtraData.length) // TODO - THIS WONT WORK, BEACUASE THERE IS NO REAL LENGHT ON THE DERIVED FROM FIELD. MUST MAKE AN EXTRA COUNT LENGTH
+  // conversions required for ASC
+  let extraDataID = offerID.concat('-').concat(BigInt.fromI32(offer.extraDataCount).toString())
   let extraData = new OfferExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
@@ -285,6 +285,8 @@ export function handleOfferData(event: OfferData): void {
   extraData.ipfsHashBytes = event.params.ipfsHash
   extraData.sender = event.params.party
   extraData.offerID = offerID
-
   extraData.save()
+
+  offer.extraDataCount = offer.extraDataCount + 1
+  offer.save()
 }
