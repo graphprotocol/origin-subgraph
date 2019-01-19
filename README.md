@@ -73,7 +73,53 @@ The query below shows all the information that is possible to query, but is limi
 
 ```
 {
- 
+ {
+   listings {
+     id
+     seller
+     blockNumber
+     depositManager
+     deposit
+     ipfsBytesHashes
+     ipfsBase58Hashes
+     offers {
+       id
+     }
+     ipfsData {
+       id
+       listingID
+       blockNumber
+       schemaId
+       listingType
+       category
+       description
+       subCategory
+       language
+       title
+       price {
+         amount
+         currency
+       }
+       unitsTotal
+       commission {
+         amount
+         currency
+       }
+       commissionPerUnit {
+         amount
+         currency
+       }
+       media {
+         url
+         contentType
+       }
+     }
+     listingExtraData {
+       id
+     }
+     status
+   }
+ }
 }
 
 ```

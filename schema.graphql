@@ -5,12 +5,18 @@ type Listing @entity {
     seller: Bytes!
     depositManager: Bytes!
     deposit: BigInt!
-    ipfsBytesHashes: [Bytes!]! # multiple, from updates. TODO - might be moved into ipfsData
+    ipfsBytesHashes: [Bytes!]! # multiple, from updates
     ipfsBase58Hashes: [String!]!
     offers: [Offer!]! @derivedFrom(field: "listingID")
-    ipfsData: [IPFSListingData!]! @derivedFrom(field: "listingID")# the data read from IPFS. Includes extraData hashes
+    ipfsData: [IPFSListingData!]! @derivedFrom(field: "listingID")
+
+    # Records the single events that can be emitted as extra, and effect no storage
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
-    status: String!
+
+    # used because the current withdraw and dispute
+    # schemas have no required fields, and can simply be recorded by the fact the event was
+    # emitted, and no need to read the IPFS data, since it will all be the same hash
+    status: String! # created, updated, withdrawn, disputed
 
 }
 
@@ -18,6 +24,7 @@ type Listing @entity {
 # Note that a user can (and it is shown when querying send two different listings, with the
 # exact same data, which will result in a listing that shares the IPFSListingData. This is okau
 # It will end up overwriting it in the subgraph, but that is fine because it is the exact same
+# The listingID will get overwritten, making it only derivatily relational to the lastest listing
 type IPFSListingData @entity {
     id: ID!              # the IPFS hash
     listingID: String!   # used to derive the relationship
@@ -41,37 +48,39 @@ type IPFSListingData @entity {
     media: [Media!]! @derivedFrom(field: "listing")
 }
 
-        type IPFSListingCurrency @entity {
-            id: ID! # the IPFS Hash
-            amount: String!
-            currency: String!
-        }
+    type IPFSListingCurrency @entity {
+        id: ID! # the IPFS Hash
+        amount: String!
+        currency: String!
+    }
 
-        type IPFSListingCommission @entity {
-            id: ID! # the IPFS Hash
-            amount: String!
-            currency: String!
-        }
+    type IPFSListingCommission @entity {
+        id: ID! # the IPFS Hash
+        amount: String!
+        currency: String!
+    }
 
-        type IPFSListingCommissionPerUnit @entity {
-            id: ID! # the IPFS Hash
-            amount: String!
-            currency: String!
-        }
+    type IPFSListingCommissionPerUnit @entity {
+        id: ID! # the IPFS Hash
+        amount: String!
+        currency: String!
+    }
 
-        type Media @entity {
-            id: ID!                 # the IPFS Hash, concatenated with the location in the array
-            url: String!
-            contentType: String!
-            listing: String!
-        }
+    type Media @entity {
+        id: ID!                 # the IPFS Hash, concatenated with the location in the array
+        url: String!
+        contentType: String!
+        listing: String!
+    }
 
 # Extra data that is emitted as an event, not stored on ethereum
+# Note - not emitted on mainnet yet, so can't test
 type ListingExtraData @entity {
     id: ID!
     listingID: String!
     sender: Bytes!
-    ipfsHash: Bytes!
+    ipfsHashBytes: Bytes!
+    ipfsHashBase58: String!
 }
 
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData

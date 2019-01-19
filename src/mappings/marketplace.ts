@@ -12,14 +12,6 @@ import {
   MarketplaceData,
 } from '../types/schema'
 
-// NOTE  - not emitted on mainnet yet, so can't test
-export function handleMarketplaceData(event: MarketplaceDataEvent): void {
-  let id = event.params.ipfsHash.toHex()
-  let data = new MarketplaceData(id)
-  data.party = event.params.party
-  data.save()
-}
-
 export function handleAffiliateAdded(event: AffiliateAdded): void {
   let id = "0"
   let allowed = AllowedAffiliate.load(id)
@@ -33,14 +25,19 @@ export function handleAffiliateAdded(event: AffiliateAdded): void {
   aa.push(event.params.party)
   allowed.affiliates = aa
 
-  // DOES NOT WORK
-  // allowed.ipfsHash.push(event.params.ipfsHash)
   let ipfsArray = allowed.ipfsHash
-
   ipfsArray.push(event.params.ipfsHash)
   allowed.ipfsHash = ipfsArray
 
   allowed.save()
+}
+
+// NOTE  - not emitted on mainnet yet, so can't test
+export function handleMarketplaceData(event: MarketplaceDataEvent): void {
+  let id = event.params.ipfsHash.toHex()
+  let data = new MarketplaceData(id)
+  data.party = event.params.party
+  data.save()
 }
 
 // NOTE  - not emitted on mainnet yet, so can't test

@@ -33,7 +33,7 @@ export function handleListingCreated(event: ListingCreated): void {
   listing.offers = []
   listing.ipfsData = []
   listing.seller = event.params.party
-  listing.status = "open"
+  listing.status = "created"
   listing.blockNumber = event.block.number
 
   // Create array to store all related IPFS hashes (in hex)
@@ -160,6 +160,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
   let smartContract = Marketplace.bind(event.address)
   let storageListing = smartContract.listings(event.params.listingID)
   listing.deposit = storageListing.value1
+  listing.status = "updated"
 
   // Push to array to store IPFS hash (in bytes)
   let ipfsArray = listing.ipfsBytesHashes
@@ -266,16 +267,15 @@ export function handleListingUpdated(event: ListingUpdated): void {
   listing.save()
 }
 
-// ListingWithdrawn, apparently simply just sets the units to 0, making the listing withdrawn
 export function handleListingWithdrawn(event: ListingWithdrawn): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
+  listing.status = "withdrawn"
 
   // Push to array to store IPFS hash (in bytes)
   let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
   listing.ipfsBytesHashes = ipfsArray
-  listing.status = "withdrawn" // TODO - do I need this? Unit of 0 implies ? Maybe not?
 
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
@@ -284,52 +284,59 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
   base58Array.push(base58Hash)
   listing.ipfsBase58Hashes = base58Array
 
-  // TODO - read the ipfs data. COMMENT OUT THE UPDATED ONE FOR NOW
-  // SHOULD ONLY UpDATE UNTIS TO ZERO !. can check myself
-  // but will i have to totally recreate and fill out ? or only update listing.status
-
-
-
+  // Note - no need to read IPFS hashes, since all they do is indicate withdrawal
+  // For Reference, the two common hashes seen are:
+        // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
+        // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
 
   listing.save()
-
-
 }
 
-// NOTE  - not emitted on mainnet yet, so can't test
-// TODO - what does arbitrated mean, seems like it is just withdrawing money from the listing, but not closing it out
+// Note  - not emitted on mainnet yet, so can't test
+// Emitted from function sendDeposit(), which allows depositManger to send deposit
 export function handleListingArbitrated(event: ListingArbitrated): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
+  listing.status = "arbitrated"
 
+  // Push to array to store IPFS hash (in bytes)
   let ipfsArray = listing.ipfsBytesHashes
   ipfsArray.push(event.params.ipfsHash)
   listing.ipfsBytesHashes = ipfsArray
-  listing.status = "arbitrated"
 
-  //TODO direct call the contract for deposit (TRUE! IT DOES UPDATE )
-  // todo - read the ipfs data
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = listing.ipfsBase58Hashes
+  base58Array.push(base58Hash)
+  listing.ipfsBase58Hashes = base58Array
+
+  // Direct call the contract for deposit and depositManager
+  let smartContract = Marketplace.bind(event.address)
+  let storageListing = smartContract.listings(event.params.listingID)
+  listing.deposit = storageListing.value1
+
+  // Note - no need to read IPFS hashes, since none exist yet, and it is unclear what the
+  // fields would be here, and the naming is not clear on what ListingArbitrated has for a schema
+
   listing.save()
-  //
-  // let ipfsID = createIPFSDataID(id, listing.ipfsData.length)
-  // let ipfsListingData = new IPFSListingData(ipfsID)
-  // ipfsListingData.listingID = id
-  // ipfsListingData.save()
-
 }
 
+// Extra data that is emitted as an event, not stored on ethereum
+// Note - not emitted on mainnet yet, so can't test
 export function handleListingData(event: ListingData): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
 
   // changetype comes from assembly script, and is recognized by the ASC
   let extraDataID = changetype<string>(listing.listingExtraData.length as i32)
-
   let extraData = new ListingExtraData(extraDataID)
-  extraData.ipfsHash = event.params.ipfsHash
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  extraData.ipfsHashBase58 = base58Hash
+  extraData.ipfsHashBytes = event.params.ipfsHash
   extraData.sender = event.params.party
   extraData.listingID = id
-
 
   extraData.save()
 }
