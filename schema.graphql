@@ -31,15 +31,15 @@ type IPFSListingData @entity {
     blockNumber: BigInt! # helps with identifying Listing Updates, among other things
 
     # Required Fields
-    schemaId: String
-    listingType: String
-    category: String
-    subCategory: String
-    language: String
-    title: String
-    description: String
-    unitsTotal: BigInt
-    price: IPFSListingCurrency
+    schemaId: String!
+    listingType: String!
+    category: String!
+    subCategory: String!
+    language: String!
+    title: String!
+    description: String!
+    unitsTotal: BigInt!
+    price: IPFSListingCurrency!
 
     # Optional Fields
     commission: IPFSListingCommission
@@ -73,58 +73,83 @@ type IPFSListingData @entity {
         listing: String!
     }
 
-# Extra data that is emitted as an event, not stored on ethereum
-# Note - not emitted on mainnet yet, so can't test
-type ListingExtraData @entity {
-    id: ID!
-    listingID: String!
-    sender: Bytes!
-    ipfsHashBytes: Bytes!
-    ipfsHashBase58: String!
-}
+    # Extra data that is emitted as an event, not stored on ethereum
+    # Note - not emitted on mainnet yet, so can't test
+    type ListingExtraData @entity {
+        id: ID!
+        listingID: String!
+        sender: Bytes!
+        ipfsHashBytes: Bytes!
+        ipfsHashBase58: String!
+    }
 
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData
 type Offer @entity {
     id: ID!             # most likely a concatenation of the listing ID and the Offer location in the Offer[]
     listingID: String!
-    value: BigInt      # amount in eth or ERC20 token
-    commission: BigInt #
-    refund: BigInt     #
-    ipfsHashes: [Bytes!]!
-    currency: Bytes    # currency of listing
+
+    value: BigInt!      # amount in eth or ERC20 token
+    commission: BigInt! #
+    refund: BigInt!     #
+    currency: Bytes!    # currency of listing
     buyer: Bytes!       # as in the person offering to buy
-    affiliate: Bytes   # address to send any commission
-    arbitrator: Bytes  # address that settles disputes
-    finalizes: BigInt  #
+    affiliate: Bytes!   # address to send any commission
+    arbitrator: Bytes!  # address that settles disputes
+    finalizes: BigInt!  #
     # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
-    status: Int        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
+    status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
+
+    ipfsHashesBytes: [Bytes!]!
+    ipfsHashesBase58: [String!]!
+
+
     ipfsData: [IPFSOfferData!]! @derivedFrom(field: "offerID")
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
     disputer: String    # only set if it gets disputed by buyer of seller
     ruling: String      # only set if it gets ruled
 
     # Derived from the events being emitted, not stoed within the contract
+    # TODO - delete duplicate storing of status , just use theirs
     eventStatus: String! # open, accepted, withdrawn, finalized, inDispute, disputeRuled
-
-    # potential others from docs - listingType, unitsPurchased, totalPrice
-    extraOfferCount: BigInt!
-}
-
-
-# Extra data that is emitted as an event, not stored on ethereum
-type OfferExtraData @entity {
-    id: ID!
-    offerID: String!
-    sender: Bytes!
-    ipfsHash: Bytes!
 }
 
 # From IPFS, not on the contract
 type IPFSOfferData @entity {
     id: ID!
     offerID: String!
-    # TODO
+    blockNumber: BigInt!
+
+    listingId: String       # According to origin docs, this isnt a required field
+    schemaId: String!
+    listingType: String!
+    unitsPurchased: BigInt!
+    finalizes: BigInt       # According to origin docs, this isnt a required field
+
+    totalPrice: IPFSOfferTotalPrice!
+    commission: IPFSOfferCommission!     # Note - origin states this is an unsafe field
 }
+
+    type IPFSOfferTotalPrice @entity {
+        id: ID! # the IPFS Hash
+        amount: String!
+        currency: String!
+    }
+
+    type IPFSOfferCommission @entity {
+        id: ID! # the IPFS Hash
+        amount: String!
+        currency: String!
+    }
+
+
+    # Extra data that is emitted as an event, not stored on ethereum
+    type OfferExtraData @entity {
+        id: ID!
+        offerID: String!
+        sender: Bytes!
+        ipfsHashBytes: Bytes!
+        ipfsHashBase58: String!
+    }
 
 type User @entity {
     id: ID!

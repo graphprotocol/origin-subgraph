@@ -3,8 +3,12 @@ import {
   Bytes,
   ipfs,
   json,
-  ByteArray,
 } from '@graphprotocol/graph-ts'
+
+import {
+  addQm,
+  numberToString
+}  from "./origin";
 
 import {
   ListingCreated,
@@ -26,6 +30,7 @@ import {
   Media,
 } from '../types/schema'
 
+// TODO - change listingID from toHex() to toString()
 export function handleListingCreated(event: ListingCreated): void {
   // Create the Listing
   let id = event.params.listingID.toHex()
@@ -328,8 +333,7 @@ export function handleListingData(event: ListingData): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
 
-  // changetype comes from assembly script, and is recognized by the ASC
-  let extraDataID = changetype<string>(listing.listingExtraData.length as i32)
+  let extraDataID = numberToString(listing.listingExtraData.length) // TODO - THIS WONT WORK, BEACUASE THERE IS NO REAL LENGHT ON THE DERIVED FROM FIELD. MUST MAKE AN EXTRA COUNT LENGTH
   let extraData = new ListingExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
@@ -339,18 +343,4 @@ export function handleListingData(event: ListingData): void {
   extraData.listingID = id
 
   extraData.save()
-}
-
-//////////// HELPERS /////////////////////////
-
-// Helper adding 0x12 and 0x20 to make the proper ipfs hash
-// the returned bytes32 is so [0,31]
-function addQm(a: ByteArray): ByteArray {
-  let out = new Uint8Array(34)
-  out[0] = 0x12
-  out[1] = 0x20
-  for (let i = 0; i < 32; i++) {
-    out[i + 2] = a[i]
-  }
-  return out as ByteArray
 }
