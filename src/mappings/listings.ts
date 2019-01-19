@@ -333,7 +333,7 @@ export function handleListingData(event: ListingData): void {
   let id = event.params.listingID.toHex()
   let listing = Listing.load(id)
 
-  let extraDataID = numberToString(listing.listingExtraData.length) // TODO - THIS WONT WORK, BEACUASE THERE IS NO REAL LENGHT ON THE DERIVED FROM FIELD. MUST MAKE AN EXTRA COUNT LENGTH
+  let extraDataID = numberToString(listing.listingExtraData.length) // TODO - THIS WONT WORK, BEACUASE THERE IS NO REAL LENGHT ON THE DERIVED FROM FIELD. MUST MAKE AN EXTRA COUNT LENGTH. the function numberToString can be deleted
   let extraData = new ListingExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function

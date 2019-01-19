@@ -24,7 +24,7 @@ import {
   OfferExtraData,
   IPFSOfferData,
   User,
-  IPFSOfferTotalPrice, IPFSOfferCommission,
+  IPFSOfferTotalPrice, IPFSOfferCommission, Listing,
 } from '../types/schema'
 
 export function handleOfferCreated(event: OfferCreated): void {
@@ -93,7 +93,7 @@ export function handleOfferCreated(event: OfferCreated): void {
     if (listingId != null){
       ipfsOfferData.listingId = listingId.toString()
     }
-    
+
     // Creating finalizes, if it exists
     let finalizes = data.get('finalizes')
     if (finalizes != null){
@@ -125,15 +125,38 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   let id = event.params.offerID.toHex()
   let offerID = event.params.listingID.toHex().concat("-".concat(id))
   let offer = Offer.load(offerID)
+
+  // Push to array to store IPFS hash (in bytes)
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
   offer.ipfsHashesBytes = ipfsArray
   offer.eventStatus = "accepted"
 
-  //tODO direct call contract
-  // todo - read ipfs data
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
 
+  // Note - no need to read IPFS hashes, since all they do is indicate acceptance, and it is
+  // always the same hash
+  // For Reference, the common hash seen is:
+      // Qmf71bRMJtYEQpPUq8KvrBtBHFxmMneMTME2HCiqvKBrEU
+
+  // Direct call the contract for offer finalizes and offer status
+  let smartContract = Marketplace.bind(event.address)
+  let storageOffer = smartContract.offers(event.params.listingID, event.params.offerID)
+  offer.finalizes = storageOffer.value7
+  offer.status = storageOffer.value8
   offer.save()
+
+  // Direct call the contract to update listing deposit
+  let listingID = event.params.listingID.toHex()
+  let listing = Listing.load(listingID)
+  let storageListing = smartContract.listings(event.params.listingID)
+  listing.deposit = storageListing.value1
+  listing.save()
 }
 
 // NOTE  - not emitted on mainnet yet, so can't test
