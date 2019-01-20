@@ -27,6 +27,7 @@ import {
   IPFSOfferTotalPrice, IPFSOfferCommission, Listing, IPFSListingData,
 } from '../types/schema'
 
+
 export function handleOfferCreated(event: OfferCreated): void {
   // Create the offering
   let id = event.params.offerID.toString()
@@ -40,6 +41,14 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.ipfsData = []
   offer.extraDataCount = 0
 
+  // Create user if it doesn't exist
+  let user = User.load(event.params.party.toHex())
+  if (user == null) {
+    user = new User(event.params.party.toHex())
+    user.offers = []
+    user.listings = []
+    user.save()
+  }
   // Create array to store all related IPFS hashes (in hex)
   let ipfsArray = offer.ipfsHashesBytes
   ipfsArray.push(event.params.ipfsHash)
@@ -68,7 +77,7 @@ export function handleOfferCreated(event: OfferCreated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
   let pinnedHashes = new Array<string>()
   pinnedHashes.push('QmNrHAWLraUujzGz1adSZYLShDbhPJ4kDryd64GsX2xXGq')
   pinnedHashes.push('QmPZxJPiCtXuTH7ecmMsR9f4mSR6onvo141q8JKZRCBidZ')
@@ -180,7 +189,7 @@ export function handleOfferFinalized(event: OfferFinalized): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
   let pinnedHashes = new Array<string>()
   pinnedHashes.push('QmWquyKYE9qL31McDrSas2uZCzbp711u3rBTr1YqbuGfGw')
   pinnedHashes.push('QmPdDMCvZGF47MTMAaurqbwj9XLi5dKx8rNM4vfVg5r6ir')

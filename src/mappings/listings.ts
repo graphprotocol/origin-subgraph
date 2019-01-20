@@ -38,6 +38,15 @@ export function handleListingCreated(event: ListingCreated): void {
   listing.blockNumber = event.block.number
   listing.extraDataCount = 0
 
+  // Create the user if it doesn't exist
+  let user = User.load(event.params.party.toHex())
+  if (user == null) {
+    user = new User(event.params.party.toHex())
+    user.offers = []
+    user.listings = []
+    user.save()
+  }
+
   // Create array to store all related IPFS hashes (in hex)
   listing.ipfsBytesHashes = []
   let ipfsArray = listing.ipfsBytesHashes
@@ -60,7 +69,7 @@ export function handleListingCreated(event: ListingCreated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  // Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
   let pinnedHashes = new Array<string>()
   pinnedHashes.push('QmeUWRKoqSKK9qyyzu3VLFVGmjpUmfgLiYpeYnu5jDzHvB')
   pinnedHashes.push('QmPvmW469mYPXaBuvbEHB66MY7JAYGPvBncfESMourCKWW')
@@ -73,8 +82,6 @@ export function handleListingCreated(event: ListingCreated): void {
   pinnedHashes.push('QmVAJ8U3QKrBzYdbBJBJnwYGeiVrYtjcMT8CqA4z4csKMK')
   pinnedHashes.push('QmY8JXrf87hVufey9Rd1168iiLdrjmPK62yS6P86Foqf45')
   pinnedHashes.push('QmZt5fi7Jfijz9EPRoxJSXtuBzadXtXskRSV7wch4DiU3X')
-
-
 
   // Only Run ipfs.cat() if it is a hardcoded base58 hash
   let i = pinnedHashes.indexOf(base58Hash)
@@ -148,7 +155,6 @@ export function handleListingCreated(event: ListingCreated): void {
 
     ipfsListingData.save()
   }
-
   listing.save()
 }
 
@@ -178,7 +184,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
   // Note, these are three hand picked hashes of ListingUpdates. The top ones
   // are the original listing hashes, and get pinned in ListingCreated
   let pinnedHashes = new Array<string>()
@@ -265,7 +271,6 @@ export function handleListingUpdated(event: ListingUpdated): void {
 
     ipfsListingData.save()
   }
-
   listing.save()
 }
 

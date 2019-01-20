@@ -5,15 +5,16 @@
 
 The Origin smart contracts are set up so that the majority of the events are emitted from a single address. The Solidity file that has these events is `Marketplace.sol`.
 
-Most events are included and tracked in the subgraph. The following events were not tracked:
-
-* `todo` - todo
+All events in this subgraph are tracked.
 
 This subgraph can be used for Origin on the mainnet, and all testnets. In order to run it for a 
 testnet, the `subgraph.yaml` file will need to have the contract addresses changed to point to the 
 correct address for each respective network.
 
-The subgraph takes less than 5 minutes to sync. 
+The subgraph takes less than 10 minutes to sync. 
+
+> Note - This subgraph currently only `ipfs cats` about ~20 ipfs files to show full functionality of all the mappings. This is because the ipfs node running alongside The Graph Node get hung 
+up on searching for the file for too long. The subgraph should be able to connect to the origin ipfs node via swarm, but we are waiting to coordinate that. 
 
 ## Brief Description of The Graph Node Setup
 
@@ -59,8 +60,10 @@ We have provided a quick guide on how to start up the origin-subgraph graph node
     --ethereum-rpc rinkeby-infura:https://rinkeby.infura.io 
 
 ```
+
+ 7. Now create the subgraph on The Graph Node with `yarn create-subgraph`. 
   
- 7. Now deploy the origin-subgraph to The Graph Node with `yarn deploy --verbosity debug`. You should see a lot of blocks being skipped in the `graph-node` terminal, and then it will start ingesting events from the moment the contracts were uploaded to the network. 
+ 8. Next deploy the origin-subgraph to The Graph Node with `yarn deploy --verbosity debug`. You should see a lot of blocks being skipped in the `graph-node` terminal, and then it will start ingesting events from the moment the contracts were uploaded to the network. 
 
 Now that you have subgraph is running you may open a [Graphiql](https://github.com/graphql/graphiql) browser at `127.0.0.1:8000` and get started with querying.
 
@@ -69,59 +72,152 @@ Now that you have subgraph is running you may open a [Graphiql](https://github.c
 Below are a few ways to show how to query the origin-subgraph for data. 
 
 ### Querying all possible data that is stored in the subgraph
-The query below shows all the information that is possible to query, but is limited to the first 5 instances. There are many other filtering options that can be used, just check out the [querying api](https://github.com/graphprotocol/graph-node/blob/master/docs/graphql-api.md).
+The query below shows all the information that is possible to query, but is limited to the first 10 instances. There are many other filtering options that can be used, just check out the [querying api](https://github.com/graphprotocol/graph-node/blob/master/docs/graphql-api.md).
 
-```
+This query queries by users. It shows all user listings and offers. Within those listings and offers, all data pertaining to them are included. For example, User A's listing 101, will also include all offers made on that listing, such as Offer 101-1, 101-2, etc. 
+
+```graphql
 {
- {
-   listings {
-     id
-     seller
-     blockNumber
-     depositManager
-     deposit
-     ipfsBytesHashes
-     ipfsBase58Hashes
-     offers {
-       id
-     }
-     ipfsData {
-       id
-       listingID
-       blockNumber
-       schemaId
-       listingType
-       category
-       description
-       subCategory
-       language
-       title
-       price {
-         amount
-         currency
-       }
-       unitsTotal
-       commission {
-         amount
-         currency
-       }
-       commissionPerUnit {
-         amount
-         currency
-       }
-       media {
-         url
-         contentType
-       }
-     }
-     listingExtraData {
-       id
-     }
-     status
-   }
- }
+  users(first: 10, skip: 5) {
+    listings {
+      id
+      seller
+      blockNumber
+      depositManager
+      deposit
+      ipfsBytesHashes
+      ipfsBase58Hashes
+      status
+      offers {
+        id
+        listingID
+        value
+        commission
+        refund
+        currency
+        buyer
+        affiliate
+        arbitrator
+        finalizes
+        status
+        disputer
+        ruling
+        review {
+          id
+          schemaId
+          text
+          rating
+          blockNumber
+        }
+        ipfsHashesBytes
+        ipfsHashesBase58
+        ipfsData {
+          id
+          offerID
+          blockNumber
+          schemaId
+          listingType
+          unitsPurchased
+          finalizes
+          totalPrice {
+            amount
+            currency
+          }
+          commission {
+            amount
+            currency
+          }
+        }
+        offerExtraData {
+          id
+          offerID
+          sender
+          ipfsHashBytes
+          ipfsHashBase58
+        }
+        disputer
+        ruling
+      }
+      ipfsData {
+        id
+        listingID
+        blockNumber
+        schemaId
+        listingType
+        category
+        description
+        subCategory
+        language
+        title
+        price {
+          amount
+          currency
+        }
+        unitsTotal
+        commission {
+          amount
+          currency
+        }
+        commissionPerUnit {
+          amount
+          currency
+        }
+        media {
+          url
+          contentType
+        }
+      }
+      listingExtraData {
+        id
+        ipfsHashBytes
+        ipfsHashBase58
+        listingID
+        sender
+      }
+    }
+    offers {
+      id
+      listingID
+      value
+      commission
+      refund
+      currency
+      buyer
+      affiliate
+      arbitrator
+      finalizes
+      status
+      disputer
+      ruling
+      review {
+        id
+        schemaId
+        text
+        rating
+        blockNumber
+      }
+      ipfsHashesBytes
+      ipfsHashesBase58
+      ipfsData {
+        id
+        offerID
+        blockNumber
+        schemaId
+        listingType
+        unitsPurchased
+        finalizes
+        totalPrice {
+          amount
+          currency
+        }
+        commission {
+          amount
+          currency
+        }
+      }
+    }
+  }
 }
-
 ```
 The command above can be copy pasted into the Graphiql interface in your browser at `127.0.0.1:8000`.
 

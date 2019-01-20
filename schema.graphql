@@ -150,7 +150,6 @@ type IPFSOfferData @entity {
         currency: String!
     }
 
-
 # Extra data that is emitted as an event, not stored in contract
 type OfferExtraData @entity {
     id: ID!
@@ -162,7 +161,8 @@ type OfferExtraData @entity {
 
 type User @entity {
     id: ID!
-    # TODO - LAST THING
+    listings: [Listing!]! @derivedFrom(field: "seller")
+    offers: [Offer!]! @derivedFrom(field: "buyer")
 }
 
 # might need, would be a list of addresses, that are valid, and a placeholder ID
@@ -174,47 +174,8 @@ type AllowedAffiliate @entity {
 }
 
 # Just additional data that can be emitted by the marketplace contract, not stored in contract
-# EVENTS - MarketplaceData
+# EVENT - MarketplaceData
 type MarketplaceData @entity {
     id: ID! #ipfs hash
     party: Bytes!
 }
-
-
-# it appears a claim can be valid or invalid, but that an entire claim is its own address. kinda what yaniv was talked about.
-# this would probably make the ClaimVerifer a single address on mainnet, and the claims Multi-address
-# also note, the Claim Verifer has no account storage, it just emits events that a claim is Valid
-
-# EVENTS -
-# do we need:
-# event IdentityUpdated, IdentityDeleted
-
-## events ClaimAdded, ClaimRemoved , ClaimValid, ClaimInvalid
-#type Claim @entity {
-#    id: ID!             # claimID, used to store them in a mapping
-#    topic: BigInt!      # number representing topic of claim (biometric, residence, etc)
-#    scheme: BigInt!     # scheme with which this claim SHOULD be verified. or ECDSA, RSA, etc
-#    issuer: Bytes!      # The issuers identity contract address, or the addr used to sign signature
-#    signature: Bytes!   # proof that the claim issuer issued a claim of topic for this identity
-#    data: Bytes!        # the hash of the claim data, sitting in another location
-#    uri: String!        # the location of the claim (IPFS)
-#    claimValid: Boolean #
-#}
-#
-## a proxy contact for key management and execution
-#type KeyHolderData @entity {
-#    id: ID! # i think each key is its own contract address, thus making this a contract address
-#    executionNone: BigInt!
-#    keys: [Bytes32!]! # TODO - might be wrong
-#    executions: [Executions!]!
-#}
-#
-#type Key @entity {
-#    id: ID! # key
-#    keyType: BigInt!
-#    purposes: [BigInt!]!
-#}
-#
-#type Execution @entity {
-#
-#}
