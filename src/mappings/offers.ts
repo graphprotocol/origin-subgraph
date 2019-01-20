@@ -21,9 +21,10 @@ import {
 import {
   Offer,
   OfferExtraData,
+  Review,
   IPFSOfferData,
   User,
-  IPFSOfferTotalPrice, IPFSOfferCommission, Listing,
+  IPFSOfferTotalPrice, IPFSOfferCommission, Listing, IPFSListingData,
 } from '../types/schema'
 
 export function handleOfferCreated(event: OfferCreated): void {
@@ -32,6 +33,7 @@ export function handleOfferCreated(event: OfferCreated): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = new Offer(offerID)
   offer.listingID = event.params.listingID.toString()
+  offer.blockNumber = event.block.number
   offer.buyer = event.params.party
   offer.ipfsHashesBytes = []
   offer.offerExtraData = []
@@ -156,12 +158,75 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   listing.save()
 }
 
+// Note - if handler runs, the offer gets deleted off the blockchain
+// but we choose not to delete it
 export function handleOfferFinalized(event: OfferFinalized): void {
-  // TODO
+  let id = event.params.offerID.toString()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
+  let offer = Offer.load(offerID)
+
+  // Push to array to store IPFS hash (in bytes)
+  let ipfsArray = offer.ipfsHashesBytes
+  ipfsArray.push(event.params.ipfsHash)
+  offer.ipfsHashesBytes = ipfsArray
+  offer.status = 4 // we set to 4,  a custom value to indicate offer is finalized
+
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
+
+  //////////////// JSON PARSING BELOW /////////////////////////////////////
+
+  // TODO: Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
+  let pinnedHashes = new Array<string>()
+  pinnedHashes.push('QmWquyKYE9qL31McDrSas2uZCzbp711u3rBTr1YqbuGfGw')
+  pinnedHashes.push('QmPdDMCvZGF47MTMAaurqbwj9XLi5dKx8rNM4vfVg5r6ir')
+  pinnedHashes.push('QmU5BGjyX7QcWjz5VFDzsFLTLLo9b5ivyXiCN4WKJUuWoh')
+
+  // Only Run ipfs.cat() if it is a hardcoded base58 hash
+  let i = pinnedHashes.indexOf(base58Hash)
+  if (i != -1) {
+    let getIPFSData = ipfs.cat(base58Hash)
+    let data = json.fromBytes(getIPFSData).toObject()
+    let review = new Review(base58Hash)
+    review.blockNumber = event.block.number
+    review.schemaId = data.get('schemaId').toString()
+    review.rating = data.get('rating').toBigInt().toI32()
+    review.text = data.get('text').toString()
+    review.save()
+
+    offer.review = base58Hash
+  }
+  offer.save()
 }
 
+// Note - if handler runs, the offer gets deleted off the blockchain
+// but we choose not to delete it
 export function handleOfferWithdrawn(event: OfferWithdrawn): void {
-  // TODO
+  let id = event.params.offerID.toString()
+  // let offerID = event.params.listingID.toString().concat("-".concat(id))
+  // let offer = Offer.load(offerID)
+  //
+  // // Push to array to store IPFS hash (in bytes)
+  // let ipfsArray = offer.ipfsHashesBytes
+  // ipfsArray.push(event.params.ipfsHash)
+  // offer.ipfsHashesBytes = ipfsArray
+  // offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
+  //
+  // // Push to array to store IPFS hash (in base58)
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
+  // let base58Array = offer.ipfsHashesBase58
+  // base58Array.push(base58Hash)
+  // offer.ipfsHashesBase58 = base58Array
+  //
+  // // Note - no need to read IPFS hashes, since all they do is indicate finalization.
+  // // The common hashes are:
+  //
+  // offer.save()
 }
 
 // NOTE  - not emitted on mainnet yet, so can't test
@@ -270,6 +335,7 @@ export function handleOfferData(event: OfferData): void {
   if (offer == null) {
     offer = new Offer(offerID)
     offer.ipfsHashesBytes = new Array<Bytes>()
+    offer.blockNumber = event.block.number
     offer.offerExtraData = []
     offer.ipfsData = []
     offer.extraDataCount = 0

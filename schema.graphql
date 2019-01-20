@@ -88,6 +88,7 @@ type ListingExtraData @entity {
 type Offer @entity {
     id: ID!             # most likely a concatenation of the listing ID and the Offer location in the Offer[]
     listingID: String!
+    blockNumber: BigInt!
 
     value: BigInt!      # amount in eth or ERC20 token
     commission: BigInt! #
@@ -98,8 +99,9 @@ type Offer @entity {
     arbitrator: Bytes!  # address that settles disputes
     finalizes: BigInt!  #
     # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
-    status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed
+    status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed. 4 = finalized, 5 = withdrawn (4 and 5 are supersets of whats in the smart contract)
 
+    review: Review
     disputer: String    # extra field, so we can store if buyer or seller started dispute
     ruling: BigInt      # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
@@ -110,6 +112,14 @@ type Offer @entity {
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
     extraDataCount: Int!
 }
+    # Review made when OfferFinalized is emitted. The Review is stored in ipfs
+    type Review @entity {
+        id: ID!             # the IPFS hash
+        blockNumber: BigInt!
+        schemaId: String!
+        rating: Int!        # rating 0-5
+        text: String!       # review text
+    }
 
 # From IPFS, not on the contract
 type IPFSOfferData @entity {

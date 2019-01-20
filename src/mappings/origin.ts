@@ -60,8 +60,3 @@ export function addQm(a: ByteArray): ByteArray {
   }
   return out as ByteArray
 }
-
-// changetype comes from assembly script, and is recognized by the ASC
-export function numberToString(num: number): string {
-  return changetype<string>(num as i32)
-}
