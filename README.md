@@ -14,7 +14,8 @@ correct address for each respective network.
 The subgraph takes less than 10 minutes to sync. 
 
 > Note - This subgraph currently only `ipfs cats` about ~20 ipfs files to show full functionality of all the mappings. This is because the ipfs node running alongside The Graph Node get hung 
-up on searching for the file for too long. The subgraph should be able to connect to the origin ipfs node via swarm, but we are waiting to coordinate that. 
+up on searching for the file for too long. The subgraph should be able to connect to the origin ipfs node via swarm, but we are waiting to coordinate that. You can access all the origin IPFS files
+through https at `https://ipfs.originprotocol.com/ipfs/`
 
 ## Brief Description of The Graph Node Setup
 
