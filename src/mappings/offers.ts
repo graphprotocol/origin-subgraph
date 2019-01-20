@@ -207,26 +207,28 @@ export function handleOfferFinalized(event: OfferFinalized): void {
 // but we choose not to delete it
 export function handleOfferWithdrawn(event: OfferWithdrawn): void {
   let id = event.params.offerID.toString()
-  // let offerID = event.params.listingID.toString().concat("-".concat(id))
-  // let offer = Offer.load(offerID)
-  //
-  // // Push to array to store IPFS hash (in bytes)
-  // let ipfsArray = offer.ipfsHashesBytes
-  // ipfsArray.push(event.params.ipfsHash)
-  // offer.ipfsHashesBytes = ipfsArray
-  // offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
-  //
-  // // Push to array to store IPFS hash (in base58)
-  // let hexHash = addQm(event.params.ipfsHash) as Bytes
-  // let base58Hash = hexHash.toBase58() // imported crypto function
-  // let base58Array = offer.ipfsHashesBase58
-  // base58Array.push(base58Hash)
-  // offer.ipfsHashesBase58 = base58Array
-  //
-  // // Note - no need to read IPFS hashes, since all they do is indicate finalization.
-  // // The common hashes are:
-  //
-  // offer.save()
+  let offerID = event.params.listingID.toString().concat("-".concat(id))
+  let offer = Offer.load(offerID)
+
+  // Push to array to store IPFS hash (in bytes)
+  let ipfsArray = offer.ipfsHashesBytes
+  ipfsArray.push(event.params.ipfsHash)
+  offer.ipfsHashesBytes = ipfsArray
+  offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
+
+  // Push to array to store IPFS hash (in base58)
+  let hexHash = addQm(event.params.ipfsHash) as Bytes
+  let base58Hash = hexHash.toBase58() // imported crypto function
+  let base58Array = offer.ipfsHashesBase58
+  base58Array.push(base58Hash)
+  offer.ipfsHashesBase58 = base58Array
+
+  // Note - no need to read IPFS hashes, since all they do is indicate finalization.
+  // The common hashes are:
+    // QmPVPouaHjCtbZF5bpLaHVjyFgds8ohegwHTxuLuqwviD2
+    // QmcTeo1NTZPyydseLg5AQF3rU59Tqgc6vxUMw1Yd8UCyLW
+
+  offer.save()
 }
 
 // NOTE  - not emitted on mainnet yet, so can't test

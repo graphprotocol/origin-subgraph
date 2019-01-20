@@ -12,18 +12,17 @@ type Listing @entity {
 
     # Records the single events that can be emitted as extra, and effect no storage
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
-    extraDataCount: Int!
+    extraDataCount: Int! # used to derive a relation to the ListingExtraData
 
     # used because the current withdraw and dispute
     # schemas have no required fields, and can simply be recorded by the fact the event was
     # emitted, and no need to read the IPFS data, since it will all be the same hash
     status: String! # created, updated, withdrawn, disputed
-
 }
 
 # From IPFS, not stored on ethereum
 # Note that a user can (and it is shown when querying send two different listings, with the
-# exact same data, which will result in a listing that shares the IPFSListingData. This is okau
+# exact same data, which will result in a listing that shares the IPFSListingData. This is okay
 # It will end up overwriting it in the subgraph, but that is fine because it is the exact same
 # The listingID will get overwritten, making it only derivatily relational to the lastest listing
 type IPFSListingData @entity {
@@ -68,7 +67,7 @@ type IPFSListingData @entity {
     }
 
     type Media @entity {
-        id: ID!                 # the IPFS Hash, concatenated with the location in the array
+        id: ID! # the IPFS Hash, concatenated with the location in the array
         url: String!
         contentType: String!
         listing: String!
@@ -86,31 +85,33 @@ type ListingExtraData @entity {
 
 # EVENTS - OfferCreated, OfferAccepted, OfferFinalized, OfferWithdrawn, OfferFundsAdded, OfferDisputed, OfferRuling, OfferData
 type Offer @entity {
-    id: ID!             # most likely a concatenation of the listing ID and the Offer location in the Offer[]
+    id: ID!             # a concatenation of the listing ID and the Offer location in the Offer[]
     listingID: String!
     blockNumber: BigInt!
 
+    # required values
     value: BigInt!      # amount in eth or ERC20 token
-    commission: BigInt! #
-    refund: BigInt!     #
+    commission: BigInt!
+    refund: BigInt!
     currency: Bytes!    # currency of listing
     buyer: Bytes!       # as in the person offering to buy
     affiliate: Bytes!   # address to send any commission
     arbitrator: Bytes!  # address that settles disputes
-    finalizes: BigInt!  #
-    # to add, open, withdrawn, finalized, disputeRuled, and make string? to see
+    finalizes: BigInt!
     status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed. 4 = finalized, 5 = withdrawn (4 and 5 are supersets of whats in the smart contract)
 
+    # optional
     review: Review
     disputer: String    # extra field, so we can store if buyer or seller started dispute
     ruling: BigInt      # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
     ipfsHashesBytes: [Bytes!]!
     ipfsHashesBase58: [String!]!
-
     ipfsData: [IPFSOfferData!]! @derivedFrom(field: "offerID")
+
+    # Records the single events that can be emitted as extra, and effect no storage
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
-    extraDataCount: Int!
+    extraDataCount: Int!  # used to derive a relation to the ListingExtraData
 }
     # Review made when OfferFinalized is emitted. The Review is stored in ipfs
     type Review @entity {
@@ -121,18 +122,18 @@ type Offer @entity {
         text: String!       # review text
     }
 
-# From IPFS, not on the contract
+# From IPFS, not on the contract storage
 type IPFSOfferData @entity {
     id: ID!
     offerID: String!
     blockNumber: BigInt!
 
+    # ipfs data
     listingId: String       # According to origin docs, this isnt a required field
     schemaId: String!
     listingType: String!
     unitsPurchased: BigInt!
     finalizes: BigInt       # According to origin docs, this isnt a required field
-
     totalPrice: IPFSOfferTotalPrice!
     commission: IPFSOfferCommission!     # Note - origin states this is an unsafe field
 }
@@ -150,7 +151,7 @@ type IPFSOfferData @entity {
     }
 
 
-# Extra data that is emitted as an event, not stored on ethereum
+# Extra data that is emitted as an event, not stored in contract
 type OfferExtraData @entity {
     id: ID!
     offerID: String!
@@ -161,8 +162,7 @@ type OfferExtraData @entity {
 
 type User @entity {
     id: ID!
-
-    # TODO
+    # TODO - LAST THING
 }
 
 # might need, would be a list of addresses, that are valid, and a placeholder ID

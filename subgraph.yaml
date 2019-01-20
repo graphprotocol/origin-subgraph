@@ -1,4 +1,3 @@
-# - 0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 token address (most likely wont use)
 specVersion: 0.0.1
 description: Origin is a protocol for creating peer-to-peer marketplaces using the Ethereum blockchain and IPFS.
 repository: https://github.com/graphprotocol/origin-subgraph
@@ -62,3 +61,6 @@ dataSources:
           handler: handleOfferRuling
         - event: OfferData(address,uint256,uint256,bytes32)
           handler: handleOfferData
+
+
+# - 0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 mainnet token address (potentially use in the future)
