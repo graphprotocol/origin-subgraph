@@ -62,7 +62,7 @@ We have provided a quick guide on how to start up the origin-subgraph graph node
 
 ```
 
- 7. Now create the subgraph on The Graph Node with `yarn create-subgraph`. 
+ 7. Now create the subgraph locally on The Graph Node with `yarn create-subgraph`. 
   
  8. Next deploy the origin-subgraph to The Graph Node with `yarn deploy --verbosity debug`. You should see a lot of blocks being skipped in the `graph-node` terminal, and then it will start ingesting events from the moment the contracts were uploaded to the network. 
 
@@ -174,47 +174,6 @@ This query queries by users. It shows all user listings and offers. Within those
         ipfsHashBase58
         listingID
         sender
-      }
-    }
-    offers {
-      id
-      listingID
-      value
-      commission
-      refund
-      currency
-      buyer
-      affiliate
-      arbitrator
-      finalizes
-      status
-      disputer
-      ruling
-      review {
-        id
-        schemaId
-        text
-        rating
-        blockNumber
-      }
-      ipfsHashesBytes
-      ipfsHashesBase58
-      ipfsData {
-        id
-        offerID
-        blockNumber
-        schemaId
-        listingType
-        unitsPurchased
-        finalizes
-        totalPrice {
-          amount
-          currency
-        }
-        commission {
-          amount
-          currency
-        }
       }
     }
   }
