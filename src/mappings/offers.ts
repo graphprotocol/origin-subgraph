@@ -70,17 +70,8 @@ export function handleOfferCreated(event: OfferCreated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
-  let pinnedHashes = new Array<string>()
-  pinnedHashes.push('QmNrHAWLraUujzGz1adSZYLShDbhPJ4kDryd64GsX2xXGq')
-  pinnedHashes.push('QmPZxJPiCtXuTH7ecmMsR9f4mSR6onvo141q8JKZRCBidZ')
-  pinnedHashes.push('QmViFco482NKAAhSE5WLbHYh3ES9eoSDTTTbQjgRvzkLQS')
-  pinnedHashes.push('QmVbAv2C4XVsE4xwSgsryyGGSPKgR96TAusUSYDR4zqffo')
-  pinnedHashes.push('QmYVUZWMaf43svg24f3gdE3yJRpLKtekzst3BuEXxkqKnM')
-
-  // Only Run ipfs.cat() if it is a hardcoded base58 hash
-  let i = pinnedHashes.indexOf(base58Hash)
-  if (i != -1) {
+  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
+  if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
     let ipfsOfferData = new OfferData(base58Hash)
@@ -166,15 +157,8 @@ export function handleOfferFinalized(event: OfferFinalized): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
-  let pinnedHashes = new Array<string>()
-  pinnedHashes.push('QmWquyKYE9qL31McDrSas2uZCzbp711u3rBTr1YqbuGfGw')
-  pinnedHashes.push('QmPdDMCvZGF47MTMAaurqbwj9XLi5dKx8rNM4vfVg5r6ir')
-  pinnedHashes.push('QmU5BGjyX7QcWjz5VFDzsFLTLLo9b5ivyXiCN4WKJUuWoh')
-
-  // Only Run ipfs.cat() if it is a hardcoded base58 hash
-  let i = pinnedHashes.indexOf(base58Hash)
-  if (i != -1) {
+  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
+  if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
     let review = new Review(base58Hash)

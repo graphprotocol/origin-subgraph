@@ -6,14 +6,14 @@
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
     "create-subgraph": "graph create origin-subgraph --node http://127.0.0.1:8020",
-    "create-hosted": "graph create Origin --node https://api.thegraph.com/deploy/",
-    "create-staging": "graph create Origin --node https://api.staging.thegraph.com/deploy/",
+    "create-hosted": "graph create origin --node https://api.thegraph.com/deploy/",
+    "create-staging": "graph create origin_test --node https://api.staging.thegraph.com/deploy/",
     "build": "graph build subgraph.yaml",
     "build-ipfs": "graph build --ipfs http://localhost:5001 subgraph.yaml",
     "build-wast": "graph build -t wast subgraph.yaml",
     "deploy": "graph deploy origin-subgraph --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
-    "deploy-hosted": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>",
-    "deploy-staging": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>"
+    "deploy-hosted": "graph deploy --debug graphprotocol/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>",
+    "deploy-staging": "graph deploy --debug davekaj/origin_test --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "https://github.com/graphprotocol/graph-cli",

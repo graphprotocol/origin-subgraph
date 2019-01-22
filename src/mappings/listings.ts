@@ -59,23 +59,8 @@ export function handleListingCreated(event: ListingCreated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
-  let pinnedHashes = new Array<string>()
-  pinnedHashes.push('QmeUWRKoqSKK9qyyzu3VLFVGmjpUmfgLiYpeYnu5jDzHvB')
-  pinnedHashes.push('QmPvmW469mYPXaBuvbEHB66MY7JAYGPvBncfESMourCKWW')
-  pinnedHashes.push('QmdqtRB69x4KK2j8w5mZkVsZ1y7WShRXwWKS4jSBdQqJnx')
-  pinnedHashes.push('QmXRBSQFG6bNYtu6znpMyrFeZ5hGwxov7Kew8v8TvJqkhx')
-  pinnedHashes.push('QmVKp9AHksCNdaHQKbMqetNVXUG3KVhFiASabXzogo2xD8')
-  pinnedHashes.push('QmQFPod7GFneL7FrmZTxC6jr2P5mKv6RrW8GSQ7fSz2mdi')
-
-  // These are the initial Listings of the pinned Updated Listings
-  pinnedHashes.push('QmVAJ8U3QKrBzYdbBJBJnwYGeiVrYtjcMT8CqA4z4csKMK')
-  pinnedHashes.push('QmY8JXrf87hVufey9Rd1168iiLdrjmPK62yS6P86Foqf45')
-  pinnedHashes.push('QmZt5fi7Jfijz9EPRoxJSXtuBzadXtXskRSV7wch4DiU3X')
-
-  // Only Run ipfs.cat() if it is a hardcoded base58 hash
-  let i = pinnedHashes.indexOf(base58Hash)
-  if (i != -1) {
+  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
+  if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
     let ipfsListingData = new ListingData(base58Hash)
@@ -165,24 +150,8 @@ export function handleListingUpdated(event: ListingUpdated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  //Remove eventually - as these are hardcoded files that I have pinned to IPFS, until we can reach their node
-  // Note, these are three hand picked hashes of ListingUpdates. The top ones
-  // are the original listing hashes, and get pinned in ListingCreated
-  let pinnedHashes = new Array<string>()
-  // pinnedHashes.push('QmVAJ8U3QKrBzYdbBJBJnwYGeiVrYtjcMT8CqA4z4csKMK')
-  pinnedHashes.push('QmYtWo8rBaYWK2xqWzrJvQv7mp949pM7aC2hz1YLTPtkKK')
-
-  // pinnedHashes.push('QmY8JXrf87hVufey9Rd1168iiLdrjmPK62yS6P86Foqf45')
-  pinnedHashes.push('QmXE1c445bqvSQo2p1S9w74QB7hJhEqvpzgpVmKDs6bg79')
-
-  // Note - this QmzT is stored in two different listings, and is overwritten in our db
-  // but that is okay since it is the exact same file
-  // pinnedHashes.push('QmZt5fi7Jfijz9EPRoxJSXtuBzadXtXskRSV7wch4DiU3X')
-  pinnedHashes.push('QmV7Qd8zDZv1pTtgmQgqKv8yfe8tHtKvqoc4uSMZ16dZgg')
-
-  // Only Run ipfs.cat() if it is a hardcoded base58 hash
-  let i = pinnedHashes.indexOf(base58Hash)
-  if (i != -1) {
+  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
+  if (event.block.number.toI32() < 7090000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
     let ipfsListingData = new ListingData(base58Hash)
