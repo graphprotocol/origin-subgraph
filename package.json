@@ -11,9 +11,9 @@
     "build": "graph build subgraph.yaml",
     "build-ipfs": "graph build --ipfs http://localhost:5001 subgraph.yaml",
     "build-wast": "graph build -t wast subgraph.yaml",
-    "deploy": "graph deploy origin-subgraph --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
-    "deploy-hosted": "graph deploy --debug davekaj/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token 60e6e81070b149078e52081cdca3991d",
-    "deploy-staging": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token 28b60cfc888f427a9be7350950b9d9f3"
+    "deploy": "graph deploy origin-subgraph --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
+    "deploy-hosted": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>",
+    "deploy-staging": "graph deploy --debug davekaj/origin --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "https://github.com/graphprotocol/graph-cli",

@@ -12,18 +12,18 @@ import {
   ListingUpdated,
   ListingWithdrawn,
   ListingArbitrated,
-  ListingData,
+  ListingData as LD,
   Marketplace
 } from '../types/Marketplace/Marketplace'
 
 import {
   Listing,
-  IPFSListingData,
+  ListingData,
   ListingExtraData,
   User,
-  IPFSListingCurrency,
-  IPFSListingCommission,
-  IPFSListingCommissionPerUnit,
+  ListingCurrency,
+  ListingCommission,
+  ListingCommissionPerUnit,
   Media,
 } from '../types/schema'
 
@@ -32,7 +32,7 @@ export function handleListingCreated(event: ListingCreated): void {
   let id = event.params.listingID.toString()
   let listing = new Listing(id)
   listing.offers = []
-  listing.ipfsData = []
+  listing.data = []
   listing.seller = event.params.party
   listing.status = "created"
   listing.blockNumber = event.block.number
@@ -88,7 +88,7 @@ export function handleListingCreated(event: ListingCreated): void {
   if (i != -1) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsListingData = new IPFSListingData(base58Hash)
+    let ipfsListingData = new ListingData(base58Hash)
     ipfsListingData.listingID = id
     ipfsListingData.blockNumber = event.block.number
     ipfsListingData.schemaId = data.get('schemaId').toString()
@@ -104,7 +104,7 @@ export function handleListingCreated(event: ListingCreated): void {
     // Creating Price
     ipfsListingData.price = base58Hash
     let priceObject = data.get('price').toObject()
-    let listingCurrency = new IPFSListingCurrency(base58Hash)
+    let listingCurrency = new ListingCurrency(base58Hash)
     listingCurrency.amount = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already coming in with kind STRING. so for now we store it as a string too
     listingCurrency.currency = priceObject.get('currency').toString()
     listingCurrency.save()
@@ -114,7 +114,7 @@ export function handleListingCreated(event: ListingCreated): void {
     if (c != null) {
       ipfsListingData.commission = base58Hash
       let commissionObject = c.toObject()
-      let commission = new IPFSListingCommission(base58Hash)
+      let commission = new ListingCommission(base58Hash)
       commission.amount = commissionObject.get('amount').toString()
       commission.currency = commissionObject.get('currency').toString()
       commission.save()
@@ -125,7 +125,7 @@ export function handleListingCreated(event: ListingCreated): void {
     if (cpu  != null) {
       ipfsListingData.commissionPerUnit = base58Hash
       let cpuObject = cpu.toObject()
-      let cpuEntity = new IPFSListingCommissionPerUnit(base58Hash)
+      let cpuEntity = new ListingCommissionPerUnit(base58Hash)
       cpuEntity.amount = cpuObject.get('amount').toString()
       cpuEntity.currency = cpuObject.get('currency').toString()
       cpuEntity.save()
@@ -144,7 +144,7 @@ export function handleListingCreated(event: ListingCreated): void {
       for (let i = 0; i <mediaArray.length; i++){
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
-        mediaEntity.listing = base58Hash
+        mediaEntity.ipfsHash = base58Hash
         let url = mediaArray[i].toObject().get('url').toString()
         let contentType = mediaArray[i].toObject().get('contentType').toString()
         mediaEntity.url = url
@@ -204,7 +204,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
   if (i != -1) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsListingData = new IPFSListingData(base58Hash)
+    let ipfsListingData = new ListingData(base58Hash)
     ipfsListingData.listingID = id
     ipfsListingData.blockNumber = event.block.number
     ipfsListingData.schemaId = data.get('schemaId').toString()
@@ -220,7 +220,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
     // Creating Price
     ipfsListingData.price = base58Hash
     let priceObject = data.get('price').toObject()
-    let listingCurrency = new IPFSListingCurrency(base58Hash)
+    let listingCurrency = new ListingCurrency(base58Hash)
     listingCurrency.amount = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already coming in with kind STRING. so for now we store it as a string too
     listingCurrency.currency = priceObject.get('currency').toString()
     listingCurrency.save()
@@ -230,7 +230,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
     if (c != null) {
       ipfsListingData.commission = base58Hash
       let commissionObject = c.toObject()
-      let commission = new IPFSListingCommission(base58Hash)
+      let commission = new ListingCommission(base58Hash)
       commission.amount = commissionObject.get('amount').toString()
       commission.currency = commissionObject.get('currency').toString()
       commission.save()
@@ -241,7 +241,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
     if (cpu  != null) {
       ipfsListingData.commissionPerUnit = base58Hash
       let cpuObject = cpu.toObject()
-      let cpuEntity = new IPFSListingCommissionPerUnit(base58Hash)
+      let cpuEntity = new ListingCommissionPerUnit(base58Hash)
       cpuEntity.amount = cpuObject.get('amount').toString()
       cpuEntity.currency = cpuObject.get('currency').toString()
       cpuEntity.save()
@@ -260,7 +260,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
       for (let i = 0; i <mediaArray.length; i++){
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
-        mediaEntity.listing = base58Hash
+        mediaEntity.ipfsHash = base58Hash
         let url = mediaArray[i].toObject().get('url').toString()
         let contentType = mediaArray[i].toObject().get('contentType').toString()
         mediaEntity.url = url
@@ -331,7 +331,7 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
 
 // Extra data that is emitted as an event, not stored on ethereum
 // Note - not emitted on mainnet yet, so can't test
-export function handleListingData(event: ListingData): void {
+export function handleListingData(event: LD): void {
   let id = event.params.listingID.toString()
   let listing = Listing.load(id)
 

@@ -15,16 +15,19 @@ import {
   OfferFundsAdded,
   OfferDisputed,
   OfferRuling,
-  OfferData, Marketplace,
+  OfferData as OD,
+  Marketplace,
 } from '../types/Marketplace/Marketplace'
 
 import {
   Offer,
   OfferExtraData,
   Review,
-  IPFSOfferData,
+  OfferData,
   User,
-  IPFSOfferTotalPrice, IPFSOfferCommission, Listing, IPFSListingData,
+  OfferTotalPrice,
+  OfferCommission,
+  Listing,
 } from '../types/schema'
 
 
@@ -38,7 +41,7 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.buyer = event.params.party
   offer.ipfsHashesBytes = []
   offer.offerExtraData = []
-  offer.ipfsData = []
+  offer.data = []
   offer.extraDataCount = 0
 
   // Create user if it doesn't exist
@@ -90,7 +93,7 @@ export function handleOfferCreated(event: OfferCreated): void {
   if (i != -1) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsOfferData = new IPFSOfferData(base58Hash)
+    let ipfsOfferData = new OfferData(base58Hash)
     ipfsOfferData.offerID = offerID
     ipfsOfferData.blockNumber = event.block.number
 
@@ -112,7 +115,7 @@ export function handleOfferCreated(event: OfferCreated): void {
 
     ipfsOfferData.totalPrice = base58Hash
     let totalPriceObject = data.get('totalPrice').toObject()
-    let totalPrice = new IPFSOfferTotalPrice(base58Hash)
+    let totalPrice = new OfferTotalPrice(base58Hash)
     totalPrice.currency = totalPriceObject.get('currency').toString()
     totalPrice.amount = totalPriceObject.get('amount').toString()
     totalPrice.save()
@@ -120,7 +123,7 @@ export function handleOfferCreated(event: OfferCreated): void {
 
     ipfsOfferData.commission = base58Hash
     let commissionObject =  data.get('commission').toObject()
-    let commission = new IPFSOfferCommission(base58Hash)
+    let commission = new OfferCommission(base58Hash)
     commission.currency = commissionObject.get('currency').toString()
     commission.amount = commissionObject.get('amount').toString()
     commission.save()
@@ -337,7 +340,7 @@ export function handleOfferRuling(event: OfferRuling): void {
       // QmaWYrgrQCgSesPb5y8bPpNFCazipFYtWfK4HuA3WAGZVa
 }
 
-export function handleOfferData(event: OfferData): void {
+export function handleOfferData(event: OD): void {
   let id = event.params.offerID.toString()
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
@@ -348,7 +351,7 @@ export function handleOfferData(event: OfferData): void {
     offer.ipfsHashesBytes = new Array<Bytes>()
     offer.blockNumber = event.block.number
     offer.offerExtraData = []
-    offer.ipfsData = []
+    offer.data = []
     offer.extraDataCount = 0
     offer.save()
   }

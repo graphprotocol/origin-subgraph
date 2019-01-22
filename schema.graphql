@@ -5,27 +5,28 @@ type Listing @entity {
     seller: Bytes!
     depositManager: Bytes!
     deposit: BigInt!
-    ipfsBytesHashes: [Bytes!]! # multiple, from updates
-    ipfsBase58Hashes: [String!]!
-    offers: [Offer!]! @derivedFrom(field: "listingID")
-    ipfsData: [IPFSListingData!]! @derivedFrom(field: "listingID")
-
-    # Records the single events that can be emitted as extra, and effect no storage
-    listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
-    extraDataCount: Int! # used to derive a relation to the ListingExtraData
 
     # used because the current withdraw and dispute
     # schemas have no required fields, and can simply be recorded by the fact the event was
     # emitted, and no need to read the IPFS data, since it will all be the same hash
     status: String! # created, updated, withdrawn, disputed
+
+    offers: [Offer!]! @derivedFrom(field: "listingID")
+    data: [ListingData!]! @derivedFrom(field: "listingID")
+    # Records the single events that can be emitted as extra, and effect no storage
+    listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
+    extraDataCount: Int! # used to derive a relation to the ListingExtraData
+
+    ipfsBytesHashes: [Bytes!]! # multiple, from updates
+    ipfsBase58Hashes: [String!]!
 }
 
-# From IPFS, not stored on ethereum
+# Below is []From IPFS, not stored on ethereum
 # Note that a user can (and it is shown when querying send two different listings, with the
 # exact same data, which will result in a listing that shares the IPFSListingData. This is okay
 # It will end up overwriting it in the subgraph, but that is fine because it is the exact same
 # The listingID will get overwritten, making it only derivatily relational to the lastest listing
-type IPFSListingData @entity {
+type ListingData @entity {
     id: ID!              # the IPFS hash
     listingID: String!   # used to derive the relationship
     blockNumber: BigInt! # helps with identifying Listing Updates, among other things
@@ -39,28 +40,28 @@ type IPFSListingData @entity {
     title: String!
     description: String!
     unitsTotal: BigInt!
-    price: IPFSListingCurrency!
+    price: ListingCurrency!
 
     # Optional Fields
-    commission: IPFSListingCommission
-    commissionPerUnit: IPFSListingCommissionPerUnit
+    commission: ListingCommission
+    commissionPerUnit: ListingCommissionPerUnit
     dappSchemaId: String
     media: [Media!]! @derivedFrom(field: "listing")
 }
 
-    type IPFSListingCurrency @entity {
+    type ListingCurrency @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
     }
 
-    type IPFSListingCommission @entity {
+    type ListingCommission @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
     }
 
-    type IPFSListingCommissionPerUnit @entity {
+    type ListingCommissionPerUnit @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
@@ -70,7 +71,7 @@ type IPFSListingData @entity {
         id: ID! # the IPFS Hash, concatenated with the location in the array
         url: String!
         contentType: String!
-        listing: String!
+        ipfsHash: String!
     }
 
 # Extra data that is emitted as an event, not stored on ethereum
@@ -107,7 +108,7 @@ type Offer @entity {
 
     ipfsHashesBytes: [Bytes!]!
     ipfsHashesBase58: [String!]!
-    ipfsData: [IPFSOfferData!]! @derivedFrom(field: "offerID")
+    data: [OfferData!]! @derivedFrom(field: "offerID")
 
     # Records the single events that can be emitted as extra, and effect no storage
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
@@ -123,7 +124,7 @@ type Offer @entity {
     }
 
 # From IPFS, not on the contract storage
-type IPFSOfferData @entity {
+type OfferData @entity {
     id: ID!
     offerID: String!
     blockNumber: BigInt!
@@ -134,17 +135,17 @@ type IPFSOfferData @entity {
     listingType: String!
     unitsPurchased: BigInt!
     finalizes: BigInt       # According to origin docs, this isnt a required field
-    totalPrice: IPFSOfferTotalPrice!
-    commission: IPFSOfferCommission!     # Note - origin states this is an unsafe field
+    totalPrice: OfferTotalPrice!
+    commission: OfferCommission!     # Note - origin states this is an unsafe field
 }
 
-    type IPFSOfferTotalPrice @entity {
+    type OfferTotalPrice @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
     }
 
-    type IPFSOfferCommission @entity {
+    type OfferCommission @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
