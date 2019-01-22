@@ -47,19 +47,9 @@ export function handleListingCreated(event: ListingCreated): void {
     user.save()
   }
 
-  // Create array to store all related IPFS hashes (in hex)
-  listing.ipfsBytesHashes = []
-  let ipfsArray = listing.ipfsBytesHashes
-  ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsBytesHashes = ipfsArray
-
-  // Create array to store all related IPFS hashes (in base58)
-  listing.ipfsBase58Hashes = []
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = listing.ipfsBase58Hashes
-  base58Array.push(base58Hash)
-  listing.ipfsBase58Hashes = base58Array
+
 
   // Direct call the contract for deposit and depositManager
   let smartContract = Marketplace.bind(event.address)
@@ -170,17 +160,8 @@ export function handleListingUpdated(event: ListingUpdated): void {
   listing.deposit = storageListing.value1
   listing.status = "updated"
 
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = listing.ipfsBytesHashes
-  ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsBytesHashes = ipfsArray
-
-  // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = listing.ipfsBase58Hashes
-  base58Array.push(base58Hash)
-  listing.ipfsBase58Hashes = base58Array
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
@@ -278,18 +259,8 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
   let id = event.params.listingID.toString()
   let listing = Listing.load(id)
   listing.status = "withdrawn"
-
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = listing.ipfsBytesHashes
-  ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsBytesHashes = ipfsArray
-
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = listing.ipfsBase58Hashes
-  base58Array.push(base58Hash)
-  listing.ipfsBase58Hashes = base58Array
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   // Note - no need to read IPFS hashes, since all they do is indicate withdrawal
   // For Reference, the two common hashes seen are:
@@ -306,17 +277,9 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
   let listing = Listing.load(id)
   listing.status = "arbitrated"
 
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = listing.ipfsBytesHashes
-  ipfsArray.push(event.params.ipfsHash)
-  listing.ipfsBytesHashes = ipfsArray
-
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = listing.ipfsBase58Hashes
-  base58Array.push(base58Hash)
-  listing.ipfsBase58Hashes = base58Array
 
   // Direct call the contract for deposit and depositManager
   let smartContract = Marketplace.bind(event.address)

@@ -16,9 +16,6 @@ type Listing @entity {
     # Records the single events that can be emitted as extra, and effect no storage
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
     extraDataCount: Int! # used to derive a relation to the ListingExtraData
-
-    ipfsBytesHashes: [Bytes!]! # multiple, from updates
-    ipfsBase58Hashes: [String!]!
 }
 
 # Below is []From IPFS, not stored on ethereum
@@ -106,8 +103,7 @@ type Offer @entity {
     disputer: String    # extra field, so we can store if buyer or seller started dispute
     ruling: BigInt      # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
-    ipfsHashesBytes: [Bytes!]!
-    ipfsHashesBase58: [String!]!
+
     data: [OfferData!]! @derivedFrom(field: "offerID")
 
     # Records the single events that can be emitted as extra, and effect no storage

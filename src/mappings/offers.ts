@@ -39,7 +39,6 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.listingID = event.params.listingID.toString()
   offer.blockNumber = event.block.number
   offer.buyer = event.params.party
-  offer.ipfsHashesBytes = []
   offer.offerExtraData = []
   offer.data = []
   offer.extraDataCount = 0
@@ -52,18 +51,9 @@ export function handleOfferCreated(event: OfferCreated): void {
     user.listings = []
     user.save()
   }
-  // Create array to store all related IPFS hashes (in hex)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
 
-  // Create array to store all related IPFS hashes (in base58)
-  offer.ipfsHashesBase58 = []
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   // Direct call the contract for Offer storage values
   let smartContract = Marketplace.bind(event.address)
@@ -138,17 +128,9 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
 
-  // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   // Note - no need to read IPFS hashes, since all they do is indicate acceptance, and it is
   // always the same hash
@@ -176,19 +158,11 @@ export function handleOfferFinalized(event: OfferFinalized): void {
   let id = event.params.offerID.toString()
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
-
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
   offer.status = 4 // we set to 4,  a custom value to indicate offer is finalized
 
-  // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
+
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
@@ -222,18 +196,11 @@ export function handleOfferWithdrawn(event: OfferWithdrawn): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
   offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
 
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   // Note - no need to read IPFS hashes, since all they do is indicate finalization.
   // The common hashes are:
@@ -249,17 +216,9 @@ export function handleOfferFundsAdded(event: OfferFundsAdded): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
-
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   // Direct call the contract for offer finalizes and offer status
   let smartContract = Marketplace.bind(event.address)
@@ -276,19 +235,11 @@ export function handleOfferDisputed(event: OfferDisputed): void {
   let id = event.params.offerID.toString()
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
-
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
   offer.status = 3 // we can just set three, instead of calling contract directly
 
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   if (event.params.party == offer.buyer) {
     offer.disputer = "buyer"
@@ -309,19 +260,11 @@ export function handleOfferRuling(event: OfferRuling): void {
   let id = event.params.offerID.toString()
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
-
-  // Push to array to store IPFS hash (in bytes)
-  let ipfsArray = offer.ipfsHashesBytes
-  ipfsArray.push(event.params.ipfsHash)
-  offer.ipfsHashesBytes = ipfsArray
   offer.ruling = event.params.ruling
 
   // Push to array to store IPFS hash (in base58)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  let base58Array = offer.ipfsHashesBase58
-  base58Array.push(base58Hash)
-  offer.ipfsHashesBase58 = base58Array
 
   // Direct call the contract for offer finalizes and offer status
   let smartContract = Marketplace.bind(event.address)
@@ -348,7 +291,6 @@ export function handleOfferData(event: OD): void {
   // Odd that this is needed. You can make OfferData before an OfferCreated
   if (offer == null) {
     offer = new Offer(offerID)
-    offer.ipfsHashesBytes = new Array<Bytes>()
     offer.blockNumber = event.block.number
     offer.offerExtraData = []
     offer.data = []
