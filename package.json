@@ -12,7 +12,7 @@
     "build-ipfs": "graph build --ipfs http://localhost:5001 subgraph.yaml",
     "build-wast": "graph build -t wast subgraph.yaml",
     "deploy": "graph deploy --debug origin-subgraph --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
-    "deploy-hosted": "graph deploy --debug graphprotocol/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token <ENTER_ACCESS_TOKEN>",
+    "deploy-hosted": "graph deploy --debug graphprotocol/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token 92e3cff402c849bbb19a6765c5acc34b",
     "deploy-staging": "graph deploy --debug davekaj/origin_test --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token "
   },
   "devDependencies": {

@@ -32,6 +32,14 @@ export function handleListingCreated(event: ListingCreated): void {
   listing.status = "created"
   listing.blockNumber = event.block.number
   listing.extraDataCount = 0
+  listing.schemaId = ''
+  listing.listingType = ''
+  listing.category = ''
+  listing.subCategory = ''
+  listing.language = ''
+  listing.title = ''
+  listing.description = ''
+  listing.unitsTotal = BigInt.fromI32(0)
 
   // Create the user if it doesn't exist
   let user = User.load(event.params.party.toHex())

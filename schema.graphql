@@ -60,7 +60,6 @@ type Offer @entity {
     value: BigInt!          # amount in eth or ERC20 token
     commission: BigInt!
     refund: BigInt!
-#    currency: Bytes!       # currency of listing - Can't grab from the storage
     buyer: Bytes!           # as in the person offering to buy
     affiliate: Bytes!       # address to send any commission
     arbitrator: Bytes!      # address that settles disputes
@@ -73,7 +72,6 @@ type Offer @entity {
     ruling: BigInt          # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
     # Below are data grabbed from IPFS
-    # removed listingID here , it is a duplicate
     schemaId: String!
     listingType: String!
     unitsPurchased: BigInt!
@@ -82,10 +80,11 @@ type Offer @entity {
     commissionPrice: String
     commissionCurrency: String
 
-    # Records the single events that can be emitted as extra, and effect no storage
-    offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
-    extraDataCount: Int!  # used to derive a relation to the ListingExtraData
+    # Extra Data
+    offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID") # Records the single events that can be emitted as extra, and effect no storage
+    extraDataCount: Int!                                              # used to derive a relation to the ListingExtraData
 }
+
 # Review made when OfferFinalized is emitted. The Review is stored in ipfs
 type Review @entity {
     id: ID!             # the IPFS hash
@@ -104,6 +103,7 @@ type OfferExtraData @entity {
     ipfsHashBase58: String!
 }
 
+# Look up listings and offers by user
 type User @entity {
     id: ID!
     listings: [Listing!]! @derivedFrom(field: "seller")

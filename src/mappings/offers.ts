@@ -3,6 +3,7 @@ import {
   Bytes,
   ipfs,
   json,
+  Address
 } from '@graphprotocol/graph-ts'
 
 import {addQm} from "./origin";
@@ -38,6 +39,9 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.buyer = event.params.party
   offer.offerExtraData = []
   offer.extraDataCount = 0
+  offer.schemaId = ''
+  offer.listingType = ''
+  offer.unitsPurchased = BigInt.fromI32(0)
 
   // Create user if it doesn't exist
   let user = User.load(event.params.party.toHex())
@@ -57,11 +61,9 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.value = storageOffer.value0
   offer.commission = storageOffer.value1
   offer.refund = storageOffer.value2
-  // offer.currency = storageOffer.value3 - can't grab from the storage
   offer.buyer = storageOffer.value4
   offer.affiliate = storageOffer.value5
   offer.arbitrator = storageOffer.value6
-  // offer.finalizes = storageOffer.value7 - we get from ipfs too , so delete
   offer.status = storageOffer.value8
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
@@ -253,9 +255,19 @@ export function handleOfferData(event: OD): void {
   // Odd that this is needed. You can make OfferData before an OfferCreated
   if (offer == null) {
     offer = new Offer(offerID)
+    offer.listingID = event.params.listingID.toString()
     offer.blockNumber = event.block.number
+    offer.value = BigInt.fromI32(0)
+    offer.commission = BigInt.fromI32(0)
+    offer.refund = BigInt.fromI32(0)
+    offer.buyer = Address.fromString("0x0000000000000000000000000000000000000000")
+    offer.affiliate = Address.fromString("0x0000000000000000000000000000000000000000")
+    offer.arbitrator = Address.fromString("0x0000000000000000000000000000000000000000")
     offer.offerExtraData = []
     offer.extraDataCount = 0
+    offer.schemaId = ''
+    offer.listingType = ''
+    offer.unitsPurchased = BigInt.fromI32(0)
     offer.save()
   }
 

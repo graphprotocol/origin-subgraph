@@ -13,9 +13,8 @@ correct address for each respective network.
 
 The subgraph takes less than 10 minutes to sync. 
 
-> Note - This subgraph currently only `ipfs cats` about ~20 ipfs files to show full functionality of all the mappings. This is because the ipfs node running alongside The Graph Node get hung 
-up on searching for the file for too long. The subgraph should be able to connect to the origin ipfs node via swarm, but we are waiting to coordinate that. You can access all the origin IPFS files
-through https at `https://ipfs.originprotocol.com/ipfs/`
+> Note - This subgraph currently only `ipfs cats` up to block 7,100,000 for the mappings. This is because the ipfs node running alongside The Graph Node get hung 
+up on searching for the file for too long, so they are pinned up to there. The subgraph should be able to connect to the origin ipfs node via swarm, but we are waiting to coordinate that. You can access all the origin IPFS files through https at `https://ipfs.originprotocol.com/ipfs/`.
 
 ## Brief Description of The Graph Node Setup
 
@@ -75,107 +74,54 @@ Below are a few ways to show how to query the origin-subgraph for data.
 ### Querying all possible data that is stored in the subgraph
 The query below shows all the information that is possible to query, but is limited to the first 10 instances. There are many other filtering options that can be used, just check out the [querying api](https://github.com/graphprotocol/graph-node/blob/master/docs/graphql-api.md).
 
-This query queries by users. It shows all user listings and offers. Within those listings and offers, all data pertaining to them are included. For example, User A's listing 101, will also include all offers made on that listing, such as Offer 101-1, 101-2, etc. 
+This query will return the first 5 listings and offers. See `graphql.schema` for a complete list of everything that can be queried. 
 
 ```graphql
 {
-  users(first: 10, skip: 5) {
-    listings {
-      id
-      seller
-      blockNumber
-      depositManager
-      deposit
-      ipfsBytesHashes
-      ipfsBase58Hashes
-      status
-      offers {
-        id
-        listingID
-        value
-        commission
-        refund
-        currency
-        buyer
-        affiliate
-        arbitrator
-        finalizes
-        status
-        disputer
-        ruling
-        review {
-          id
-          schemaId
-          text
-          rating
-          blockNumber
-        }
-        ipfsHashesBytes
-        ipfsHashesBase58
-        ipfsData {
-          id
-          offerID
-          blockNumber
-          schemaId
-          listingType
-          unitsPurchased
-          finalizes
-          totalPrice {
-            amount
-            currency
-          }
-          commission {
-            amount
-            currency
-          }
-        }
-        offerExtraData {
-          id
-          offerID
-          sender
-          ipfsHashBytes
-          ipfsHashBase58
-        }
-        disputer
-        ruling
-      }
-      ipfsData {
-        id
-        listingID
-        blockNumber
-        schemaId
-        listingType
-        category
-        description
-        subCategory
-        language
-        title
-        price {
-          amount
-          currency
-        }
-        unitsTotal
-        commission {
-          amount
-          currency
-        }
-        commissionPerUnit {
-          amount
-          currency
-        }
-        media {
-          url
-          contentType
-        }
-      }
-      listingExtraData {
-        id
-        ipfsHashBytes
-        ipfsHashBase58
-        listingID
-        sender
-      }
+  listings(first: 5) {
+    id
+    seller
+    blockNumber
+    depositManager
+    deposit
+    status
+    price
+    currency
+    commissionAmount
+    commissionCurrency
+    schemaId
+    listingType
+    category
+    description
+    subCategory
+    language
+    title
+    unitsTotal
+    media {
+      url
+      contentType
     }
+  }
+  offers(first: 5) {
+    id
+    listingID
+    blockNumber
+    value
+    commission
+    refund
+    currency
+    buyer
+    affiliate
+    arbitrator
+    finalizes
+    status
+    price
+    currency
+    commissionPrice
+    commissionCurrency
+    schemaId
+    listingType
+    unitsPurchased
   }
 }
 ```
