@@ -77,7 +77,7 @@ export function handleListingCreated(event: ListingCreated): void {
     listing.media = []
 
     let priceObject = data.get('price').toObject()
-    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
+    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string
     listing.currency = priceObject.get('currency').toString()
 
     let c = data.get('commission')
@@ -197,14 +197,13 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
   let id = event.params.listingID.toString()
   let listing = Listing.load(id)
   listing.status = "withdrawn"
-  // let hexHash = addQm(event.params.ipfsHash) as Bytes
-  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   // Note - no need to read IPFS hashes, since all they do is indicate withdrawal
   // For Reference, the two common hashes seen are:
-        // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
-        // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
-
+      // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
+      // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
   listing.save()
 }
 
@@ -215,10 +214,6 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
   let listing = Listing.load(id)
   listing.status = "arbitrated"
 
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
-
   // Direct call the contract for deposit and depositManager
   let smartContract = Marketplace.bind(event.address)
   let storageListing = smartContract.listings(event.params.listingID)
@@ -226,6 +221,9 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
 
   // Note - no need to read IPFS hashes, since none exist yet, and it is unclear what the
   // fields would be here, and the naming is not clear on what ListingArbitrated has for a schema
+  // Push to array to store IPFS hash (in base58)
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   listing.save()
 }

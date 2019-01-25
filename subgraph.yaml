@@ -61,5 +61,3 @@ dataSources:
           handler: handleOfferRuling
         - event: OfferData(address,uint256,uint256,bytes32)
           handler: handleOfferData
-
-# - 0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 mainnet token address (potentially use in the future)

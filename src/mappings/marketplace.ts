@@ -7,7 +7,6 @@ import {
 } from '../types/Marketplace/Marketplace'
 
 import {
-  User,
   AllowedAffiliate,
   MarketplaceData,
 } from '../types/schema'

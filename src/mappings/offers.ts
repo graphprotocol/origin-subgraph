@@ -42,6 +42,7 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.schemaId = ''
   offer.listingType = ''
   offer.unitsPurchased = BigInt.fromI32(0)
+  offer.reviews = []
 
   // Create user if it doesn't exist
   let user = User.load(event.params.party.toHex())
@@ -68,7 +69,7 @@ export function handleOfferCreated(event: OfferCreated): void {
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
-  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
+  // NOTE - holding to 7,100,000 until we can connect to Origin IPFS node through swarm
   if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
@@ -99,14 +100,10 @@ export function handleOfferAccepted(event: OfferAccepted): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
-
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
-
-  // Note - no need to read IPFS hashes, since all they do is indicate acceptance, and it is
-  // always the same hash
-  // For Reference, the common hash seen is:
-      // Qmf71bRMJtYEQpPUq8KvrBtBHFxmMneMTME2HCiqvKBrEU
+  // Note - no need to read IPFS hashes, since all they do is indicate acceptance, and it is always the same hash
+  // For Reference, the common hash seen is Qmf71bRMJtYEQpPUq8KvrBtBHFxmMneMTME2HCiqvKBrEU
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   // Direct call the contract for offer finalizes and offer status
   let smartContract = Marketplace.bind(event.address)
@@ -134,7 +131,6 @@ export function handleOfferFinalized(event: OfferFinalized): void {
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
 
-
   //////////////// JSON PARSING BELOW /////////////////////////////////////
 
   // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
@@ -143,12 +139,11 @@ export function handleOfferFinalized(event: OfferFinalized): void {
     let data = json.fromBytes(getIPFSData).toObject()
     let review = new Review(base58Hash)
     review.blockNumber = event.block.number
+    review.offerID = id
     review.schemaId = data.get('schemaId').toString()
     review.rating = data.get('rating').toBigInt().toI32()
     review.text = data.get('text').toString()
     review.save()
-
-    offer.review = base58Hash
   }
   offer.save()
 }
@@ -160,17 +155,14 @@ export function handleOfferWithdrawn(event: OfferWithdrawn): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
 
-  offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
-
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
-
   // Note - no need to read IPFS hashes, since all they do is indicate finalization.
   // The common hashes are:
-    // QmPVPouaHjCtbZF5bpLaHVjyFgds8ohegwHTxuLuqwviD2
-    // QmcTeo1NTZPyydseLg5AQF3rU59Tqgc6vxUMw1Yd8UCyLW
+  // QmPVPouaHjCtbZF5bpLaHVjyFgds8ohegwHTxuLuqwviD2
+  // QmcTeo1NTZPyydseLg5AQF3rU59Tqgc6vxUMw1Yd8UCyLW
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 
+  offer.status = 5// we set to 5,  a custom value to indicate offer is withdrawn
   offer.save()
 }
 
@@ -179,10 +171,6 @@ export function handleOfferFundsAdded(event: OfferFundsAdded): void {
   let id = event.params.offerID.toString()
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
-
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
 
   // Direct call the contract for offer finalizes and offer status
   let smartContract = Marketplace.bind(event.address)
@@ -193,6 +181,9 @@ export function handleOfferFundsAdded(event: OfferFundsAdded): void {
   // Note - no need to read IPFS hashes, since all they do is indicate funds added
   // and it is probably always the same hash. But this event has never been emitted on
   // mainnet, so no way to see what the typical hash is
+  // Push to array to store IPFS hash (in base58)
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 }
 
 export function handleOfferDisputed(event: OfferDisputed): void {
@@ -200,10 +191,6 @@ export function handleOfferDisputed(event: OfferDisputed): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
   offer.status = 3 // we can just set three, instead of calling contract directly
-
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
 
   if (event.params.party == offer.buyer) {
     offer.disputer = "buyer"
@@ -214,6 +201,9 @@ export function handleOfferDisputed(event: OfferDisputed): void {
   // all share the same hashes, which are:
       // QmNbryRJbJpYPj2VAihcUD9cdLUv1o1DtG7BCcxVaBeUqf
       // QmPuYJbNjauKLysq2gnAMAoHxn5AHfcBFRQSktG2ARvAYs
+  // Push to array to store IPFS hash (in base58)
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   offer.save()
 }
@@ -225,10 +215,6 @@ export function handleOfferRuling(event: OfferRuling): void {
   let offerID = event.params.listingID.toString().concat("-".concat(id))
   let offer = Offer.load(offerID)
   offer.ruling = event.params.ruling
-
-  // Push to array to store IPFS hash (in base58)
-  let hexHash = addQm(event.params.ipfsHash) as Bytes
-  let base58Hash = hexHash.toBase58() // imported crypto function
 
   // Direct call the contract for offer finalizes and offer status
   let smartContract = Marketplace.bind(event.address)
@@ -245,6 +231,9 @@ export function handleOfferRuling(event: OfferRuling): void {
   // all share the same hashes, which are:
       // QmXMNjzcp6JBT3oaXLCWJp4xXfWg2Egifc5bWLJbPY377t
       // QmaWYrgrQCgSesPb5y8bPpNFCazipFYtWfK4HuA3WAGZVa
+  // Push to array to store IPFS hash (in base58)
+  // let hexHash = addQm(event.params.ipfsHash) as Bytes
+  // let base58Hash = hexHash.toBase58() // imported crypto function
 }
 
 export function handleOfferData(event: OD): void {
