@@ -56,68 +56,44 @@ type Offer @entity {
     listingID: String!
     blockNumber: BigInt!
 
-    # required values
-    value: BigInt!      # amount in eth or ERC20 token
+    # required values, from contract storage
+    value: BigInt!          # amount in eth or ERC20 token
     commission: BigInt!
     refund: BigInt!
-    currency: Bytes!    # currency of listing
-    buyer: Bytes!       # as in the person offering to buy
-    affiliate: Bytes!   # address to send any commission
-    arbitrator: Bytes!  # address that settles disputes
-    finalizes: BigInt!
-    status: Int!        # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed. 4 = finalized, 5 = withdrawn (4 and 5 are supersets of whats in the smart contract)
+#    currency: Bytes!       # currency of listing - Can't grab from the storage
+    buyer: Bytes!           # as in the person offering to buy
+    affiliate: Bytes!       # address to send any commission
+    arbitrator: Bytes!      # address that settles disputes
+    finalizes: BigInt       # According to origin docs, this isnt a required field
+    status: Int!            # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed. 4 = finalized, 5 = withdrawn (4 and 5 are supersets of whats in the smart contract)
 
-    # optional
+    # optional from the schema
     review: Review
-    disputer: String    # extra field, so we can store if buyer or seller started dispute
-    ruling: BigInt      # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
+    disputer: String        # extra field, so we can store if buyer or seller started dispute
+    ruling: BigInt          # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
-
-    data: [OfferData!]! @derivedFrom(field: "offerID")
+    # Below are data grabbed from IPFS
+    # removed listingID here , it is a duplicate
+    schemaId: String!
+    listingType: String!
+    unitsPurchased: BigInt!
+    price: String
+    currency: String
+    commissionPrice: String
+    commissionCurrency: String
 
     # Records the single events that can be emitted as extra, and effect no storage
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID")
     extraDataCount: Int!  # used to derive a relation to the ListingExtraData
 }
-    # Review made when OfferFinalized is emitted. The Review is stored in ipfs
-    type Review @entity {
-        id: ID!             # the IPFS hash
-        blockNumber: BigInt!
-        schemaId: String!
-        rating: Int!        # rating 0-5
-        text: String!       # review text
-    }
-
-# From IPFS, not on the contract storage
-# CONSOLIDATE TODO
-type OfferData @entity {
-    id: ID!
-    offerID: String!
+# Review made when OfferFinalized is emitted. The Review is stored in ipfs
+type Review @entity {
+    id: ID!             # the IPFS hash
     blockNumber: BigInt!
-
-    # ipfs data
-    listingId: String       # According to origin docs, this isnt a required field
     schemaId: String!
-    listingType: String!
-    unitsPurchased: BigInt!
-    finalizes: BigInt       # According to origin docs, this isnt a required field
-    totalPrice: OfferTotalPrice!
-    commission: OfferCommission!     # Note - origin states this is an unsafe field
+    rating: Int!        # rating 0-5
+    text: String!       # review text
 }
-
-    # CONSOLIDATE TODO
-    type OfferTotalPrice @entity {
-        id: ID! # the IPFS Hash
-        amount: String!
-        currency: String!
-    }
-
-    # CONSOLIDATE TODO
-    type OfferCommission @entity {
-        id: ID! # the IPFS Hash
-        amount: String!
-        currency: String!
-    }
 
 # Extra data that is emitted as an event, not stored in contract
 type OfferExtraData @entity {

@@ -23,10 +23,7 @@ import {
   Offer,
   OfferExtraData,
   Review,
-  OfferData,
   User,
-  OfferTotalPrice,
-  OfferCommission,
   Listing,
 } from '../types/schema'
 
@@ -40,7 +37,6 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.blockNumber = event.block.number
   offer.buyer = event.params.party
   offer.offerExtraData = []
-  offer.data = []
   offer.extraDataCount = 0
 
   // Create user if it doesn't exist
@@ -61,11 +57,11 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.value = storageOffer.value0
   offer.commission = storageOffer.value1
   offer.refund = storageOffer.value2
-  offer.currency = storageOffer.value3
+  // offer.currency = storageOffer.value3 - can't grab from the storage
   offer.buyer = storageOffer.value4
   offer.affiliate = storageOffer.value5
   offer.arbitrator = storageOffer.value6
-  offer.finalizes = storageOffer.value7
+  // offer.finalizes = storageOffer.value7 - we get from ipfs too , so delete
   offer.status = storageOffer.value8
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
@@ -74,42 +70,24 @@ export function handleOfferCreated(event: OfferCreated): void {
   if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsOfferData = new OfferData(base58Hash)
-    ipfsOfferData.offerID = offerID
-    ipfsOfferData.blockNumber = event.block.number
-
-    ipfsOfferData.schemaId = data.get('schemaId').toString()
-    ipfsOfferData.listingType = data.get('listingType').toString()
-    ipfsOfferData.unitsPurchased = data.get('unitsPurchased').toBigInt()
-
-    // Creating listingId, if it exists
-    let listingId = data.get('listingId')
-    if (listingId != null){
-      ipfsOfferData.listingId = listingId.toString()
-    }
+    offer.schemaId = data.get('schemaId').toString()
+    offer.listingType = data.get('listingType').toString()
+    offer.unitsPurchased = data.get('unitsPurchased').toBigInt()
 
     // Creating finalizes, if it exists
     let finalizes = data.get('finalizes')
     if (finalizes != null){
-      ipfsOfferData.finalizes = finalizes.toBigInt()
+      offer.finalizes = finalizes.toBigInt()
     }
 
-    ipfsOfferData.totalPrice = base58Hash
     let totalPriceObject = data.get('totalPrice').toObject()
-    let totalPrice = new OfferTotalPrice(base58Hash)
-    totalPrice.currency = totalPriceObject.get('currency').toString()
-    totalPrice.amount = totalPriceObject.get('amount').toString()
-    totalPrice.save()
+    offer.currency = totalPriceObject.get('currency').toString()
+    offer.price = totalPriceObject.get('amount').toString()
 
 
-    ipfsOfferData.commission = base58Hash
     let commissionObject =  data.get('commission').toObject()
-    let commission = new OfferCommission(base58Hash)
-    commission.currency = commissionObject.get('currency').toString()
-    commission.amount = commissionObject.get('amount').toString()
-    commission.save()
-
-    ipfsOfferData.save()
+    offer.commissionCurrency = commissionObject.get('currency').toString()
+    offer.commissionPrice = commissionObject.get('amount').toString()
   }
   offer.save()
 }
@@ -277,7 +255,6 @@ export function handleOfferData(event: OD): void {
     offer = new Offer(offerID)
     offer.blockNumber = event.block.number
     offer.offerExtraData = []
-    offer.data = []
     offer.extraDataCount = 0
     offer.save()
   }
