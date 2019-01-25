@@ -18,12 +18,8 @@ import {
 
 import {
   Listing,
-  ListingData,
   ListingExtraData,
   User,
-  ListingCurrency,
-  ListingCommission,
-  ListingCommissionPerUnit,
   Media,
 } from '../types/schema'
 
@@ -32,7 +28,6 @@ export function handleListingCreated(event: ListingCreated): void {
   let id = event.params.listingID.toString()
   let listing = new Listing(id)
   listing.offers = []
-  listing.data = []
   listing.seller = event.params.party
   listing.status = "created"
   listing.blockNumber = event.block.number
@@ -63,53 +58,38 @@ export function handleListingCreated(event: ListingCreated): void {
   if (event.block.number.toI32() < 7100000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsListingData = new ListingData(base58Hash)
-    ipfsListingData.listingID = id
-    ipfsListingData.blockNumber = event.block.number
-    ipfsListingData.schemaId = data.get('schemaId').toString()
-    ipfsListingData.listingType = data.get('listingType').toString()
-    ipfsListingData.category = data.get('category').toString()
-    ipfsListingData.subCategory = data.get('subCategory').toString()
-    ipfsListingData.language = data.get('language').toString()
-    ipfsListingData.title = data.get('title').toString()
-    ipfsListingData.description = data.get('description').toString()
-    ipfsListingData.unitsTotal = data.get('unitsTotal').toBigInt()
-    ipfsListingData.media = []
+    listing.schemaId = data.get('schemaId').toString()
+    listing.listingType = data.get('listingType').toString()
+    listing.category = data.get('category').toString()
+    listing.subCategory = data.get('subCategory').toString()
+    listing.language = data.get('language').toString()
+    listing.title = data.get('title').toString()
+    listing.description = data.get('description').toString()
+    listing.unitsTotal = data.get('unitsTotal').toBigInt()
+    listing.media = []
 
-    // Creating Price
-    ipfsListingData.price = base58Hash
     let priceObject = data.get('price').toObject()
-    let listingCurrency = new ListingCurrency(base58Hash)
-    listingCurrency.amount = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already coming in with kind STRING. so for now we store it as a string too
-    listingCurrency.currency = priceObject.get('currency').toString()
-    listingCurrency.save()
+    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
+    listing.currency = priceObject.get('currency').toString()
 
-    // Creating Commission, if it exists
     let c = data.get('commission')
     if (c != null) {
-      ipfsListingData.commission = base58Hash
       let commissionObject = c.toObject()
-      let commission = new ListingCommission(base58Hash)
-      commission.amount = commissionObject.get('amount').toString()
-      commission.currency = commissionObject.get('currency').toString()
-      commission.save()
+      listing.commissionAmount = commissionObject.get('amount').toString()
+      listing.commissionCurrency = commissionObject.get('currency').toString()
     }
 
-    // Creating CommissionPerUnit, if it exists
     let cpu = data.get('commissionPerUnit')
     if (cpu  != null) {
-      ipfsListingData.commissionPerUnit = base58Hash
       let cpuObject = cpu.toObject()
-      let cpuEntity = new ListingCommissionPerUnit(base58Hash)
-      cpuEntity.amount = cpuObject.get('amount').toString()
-      cpuEntity.currency = cpuObject.get('currency').toString()
-      cpuEntity.save()
+      listing.commissionPerUnit = cpuObject.get('amount').toString()
+      listing.commissionPerUnitCurrency = cpuObject.get('currency').toString()
     }
 
     // Creating dappSchemaId, if it exists
     let dappSchemaId = data.get('dappSchemaId')
     if (dappSchemaId != null){
-      ipfsListingData.dappSchemaId = dappSchemaId.toString()
+      listing.dappSchemaId = dappSchemaId.toString()
     }
 
     // Creating the media array, if it exists
@@ -119,7 +99,7 @@ export function handleListingCreated(event: ListingCreated): void {
       for (let i = 0; i <mediaArray.length; i++){
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
-        mediaEntity.ipfsHash = base58Hash
+        mediaEntity.listingID = id
         let url = mediaArray[i].toObject().get('url').toString()
         let contentType = mediaArray[i].toObject().get('contentType').toString()
         mediaEntity.url = url
@@ -127,8 +107,6 @@ export function handleListingCreated(event: ListingCreated): void {
         mediaEntity.save()
       }
     }
-
-    ipfsListingData.save()
   }
   listing.save()
 }
@@ -154,53 +132,38 @@ export function handleListingUpdated(event: ListingUpdated): void {
   if (event.block.number.toI32() < 7090000) {
     let getIPFSData = ipfs.cat(base58Hash)
     let data = json.fromBytes(getIPFSData).toObject()
-    let ipfsListingData = new ListingData(base58Hash)
-    ipfsListingData.listingID = id
-    ipfsListingData.blockNumber = event.block.number
-    ipfsListingData.schemaId = data.get('schemaId').toString()
-    ipfsListingData.listingType = data.get('listingType').toString()
-    ipfsListingData.category = data.get('category').toString()
-    ipfsListingData.subCategory = data.get('subCategory').toString()
-    ipfsListingData.language = data.get('language').toString()
-    ipfsListingData.title = data.get('title').toString()
-    ipfsListingData.description = data.get('description').toString()
-    ipfsListingData.unitsTotal = data.get('unitsTotal').toBigInt()
-    ipfsListingData.media = []
+    listing.schemaId = data.get('schemaId').toString()
+    listing.listingType = data.get('listingType').toString()
+    listing.category = data.get('category').toString()
+    listing.subCategory = data.get('subCategory').toString()
+    listing.language = data.get('language').toString()
+    listing.title = data.get('title').toString()
+    listing.description = data.get('description').toString()
+    listing.unitsTotal = data.get('unitsTotal').toBigInt()
+    listing.media = []
 
-    // Creating Price
-    ipfsListingData.price = base58Hash
     let priceObject = data.get('price').toObject()
-    let listingCurrency = new ListingCurrency(base58Hash)
-    listingCurrency.amount = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already coming in with kind STRING. so for now we store it as a string too
-    listingCurrency.currency = priceObject.get('currency').toString()
-    listingCurrency.save()
+    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
+    listing.currency = priceObject.get('currency').toString()
 
-    // Creating Commission, if it exists
     let c = data.get('commission')
     if (c != null) {
-      ipfsListingData.commission = base58Hash
       let commissionObject = c.toObject()
-      let commission = new ListingCommission(base58Hash)
-      commission.amount = commissionObject.get('amount').toString()
-      commission.currency = commissionObject.get('currency').toString()
-      commission.save()
+      listing.commissionAmount = commissionObject.get('amount').toString()
+      listing.commissionCurrency = commissionObject.get('currency').toString()
     }
 
-    // Creating CommissionPerUnit, if it exists
     let cpu = data.get('commissionPerUnit')
     if (cpu  != null) {
-      ipfsListingData.commissionPerUnit = base58Hash
       let cpuObject = cpu.toObject()
-      let cpuEntity = new ListingCommissionPerUnit(base58Hash)
-      cpuEntity.amount = cpuObject.get('amount').toString()
-      cpuEntity.currency = cpuObject.get('currency').toString()
-      cpuEntity.save()
+      listing.commissionPerUnit = cpuObject.get('amount').toString()
+      listing.commissionPerUnitCurrency = cpuObject.get('currency').toString()
     }
 
     // Creating dappSchemaId, if it exists
     let dappSchemaId = data.get('dappSchemaId')
     if (dappSchemaId != null){
-      ipfsListingData.dappSchemaId = dappSchemaId.toString()
+      listing.dappSchemaId = dappSchemaId.toString()
     }
 
     // Creating the media array, if it exists
@@ -210,7 +173,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
       for (let i = 0; i <mediaArray.length; i++){
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
-        mediaEntity.ipfsHash = base58Hash
+        mediaEntity.listingID = id
         let url = mediaArray[i].toObject().get('url').toString()
         let contentType = mediaArray[i].toObject().get('contentType').toString()
         mediaEntity.url = url
@@ -218,8 +181,6 @@ export function handleListingUpdated(event: ListingUpdated): void {
         mediaEntity.save()
       }
     }
-
-    ipfsListingData.save()
   }
   listing.save()
 }

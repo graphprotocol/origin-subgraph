@@ -6,29 +6,21 @@ type Listing @entity {
     depositManager: Bytes!
     deposit: BigInt!
 
-    # used because the current withdraw and dispute
-    # schemas have no required fields, and can simply be recorded by the fact the event was
-    # emitted, and no need to read the IPFS data, since it will all be the same hash
+    # used because the current withdraw and disputeschemas have no required fields, and can simply be recorded by the fact the event was
+    #emitted, and no need to read the IPFS data, since it will all be the same hash
     status: String! # created, updated, withdrawn, disputed
-
     offers: [Offer!]! @derivedFrom(field: "listingID")
-    data: [ListingData!]! @derivedFrom(field: "listingID")
     # Records the single events that can be emitted as extra, and effect no storage
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")
     extraDataCount: Int! # used to derive a relation to the ListingExtraData
-}
 
-# Below is []From IPFS, not stored on ethereum
-# Note that a user can (and it is shown when querying send two different listings, with the
-# exact same data, which will result in a listing that shares the IPFSListingData. This is okay
-# It will end up overwriting it in the subgraph, but that is fine because it is the exact same
-# The listingID will get overwritten, making it only derivatily relational to the lastest listing
-type ListingData @entity {
-    id: ID!              # the IPFS hash
-    listingID: String!   # used to derive the relationship
-    blockNumber: BigInt! # helps with identifying Listing Updates, among other things
-
-    # Required Fields
+    # Below are data grabbed from IPFS
+    price: String
+    currency: String
+    commissionAmount: String
+    commissionCurrency: String
+    commissionPerUnit: String
+    commissionPerUnitCurrency: String
     schemaId: String!
     listingType: String!
     category: String!
@@ -37,39 +29,16 @@ type ListingData @entity {
     title: String!
     description: String!
     unitsTotal: BigInt!
-    price: ListingCurrency!
-
-    # Optional Fields
-    commission: ListingCommission
-    commissionPerUnit: ListingCommissionPerUnit
     dappSchemaId: String
-    media: [Media!]! @derivedFrom(field: "listing")
+    media: [Media!]! @derivedFrom(field: "listingID")
 }
 
-    type ListingCurrency @entity {
-        id: ID! # the IPFS Hash
-        amount: String!
-        currency: String!
-    }
-
-    type ListingCommission @entity {
-        id: ID! # the IPFS Hash
-        amount: String!
-        currency: String!
-    }
-
-    type ListingCommissionPerUnit @entity {
-        id: ID! # the IPFS Hash
-        amount: String!
-        currency: String!
-    }
-
-    type Media @entity {
-        id: ID! # the IPFS Hash, concatenated with the location in the array
-        url: String!
-        contentType: String!
-        ipfsHash: String!
-    }
+type Media @entity {
+    id: ID! # the IPFS Hash, concatenated with the location in the array
+    url: String!
+    contentType: String!
+    listingID: String!
+}
 
 # Extra data that is emitted as an event, not stored on ethereum
 # Note - not emitted on mainnet yet, so can't test
@@ -120,6 +89,7 @@ type Offer @entity {
     }
 
 # From IPFS, not on the contract storage
+# CONSOLIDATE TODO
 type OfferData @entity {
     id: ID!
     offerID: String!
@@ -135,12 +105,14 @@ type OfferData @entity {
     commission: OfferCommission!     # Note - origin states this is an unsafe field
 }
 
+    # CONSOLIDATE TODO
     type OfferTotalPrice @entity {
         id: ID! # the IPFS Hash
         amount: String!
         currency: String!
     }
 
+    # CONSOLIDATE TODO
     type OfferCommission @entity {
         id: ID! # the IPFS Hash
         amount: String!

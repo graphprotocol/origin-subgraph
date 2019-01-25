@@ -30,7 +30,7 @@ This repository has these files created and ready to compile, so a user can star
 
 We have provided a quick guide on how to start up the origin-subgraph graph node below. If these steps aren't descriptive enough, the [getting started guide](https://github.com/graphprotocol/graph-node/blob/master/docs/getting-started.md) has in depth details on running a subgraph. 
 
-## Steps to get the Origin-Subgraph Running 
+## Steps to get the Origin-Subgraph Running Locally
   1. Install IPFS and run `ipfs init` followed by `ipfs daemon`
   2. Install PostgreSQL and run `initdb -D .postgres` followed by `pg_ctl -D .postgres start` and `createdb origin-subgraph-mainnet` (note this db name is used in the commands below for the mainnet examples)
   3. If using Ubuntu, you may need to install additional packages: `sudo apt-get install -y clang libpq-dev libssl-dev pkg-config`
