@@ -31,7 +31,7 @@ We have provided a quick guide on how to start up the origin-subgraph graph node
 
 ## Steps to Deploying The Origin-Subgraph Locally
   1. Install IPFS and run `ipfs init` followed by `ipfs daemon`
-  2. Install PostgreSQL and run `initdb -D .postgres` followed by `pg_ctl -D .postgres start` and `createdb origin-subgraph-mainnet` (note this db name is used in the commands below for the mainnet examples)
+  2. Install PostgreSQL and run `initdb -D .postgres` followed by `pg_ctl -D .postgres start` and `createdb graph-node-mainnet` (note this db name is used in the commands below for the mainnet examples)
   3. If using Ubuntu, you may need to install additional packages: `sudo apt-get install -y clang libpq-dev libssl-dev pkg-config`
   4. Clone this repository, and run the following:
      * `yarn`
@@ -41,22 +41,22 @@ We have provided a quick guide on how to start up the origin-subgraph graph node
 
 ```
   cargo run -p graph-node --release -- \
-  --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/mainnet-origin-subgraph \
+  --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/graph-node-mainnet \
   --ipfs 127.0.0.1:5001 \
   --ethereum-rpc mainnet-infura:https://mainnet.infura.io --debug
 ```
   6. b) Or Mainnet with a Local Ethereum node. This is very common if you are working with brand new contracts, and you have deployed them to a testnet environment like *ganache* (note that ganache commonly uses port 9545 rather than 8545):
 ```
   cargo run -p graph-node --release -- \
-  --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/mainnet-origin-subgraph \
+  --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/graph-node-mainnet \
   --ipfs 127.0.0.1:5001 \
   --ethereum-rpc mainnet-local:http://127.0.0.1:8545 
 ```
   6. c) Or Infura Rinkeby _(NOTE: Infura testnets are not reliable right now, we get inconsistent results returned. If Rinkeby data is needed, it is suggested to run your own Rinkeby node)_
 ```
-    cargo run -p graph-node --release --   
-    --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/origin-rinkeby-subgraph 
-    --ipfs 127.0.0.1:5001
+    cargo run -p graph-node --release --   \
+    --postgres-url postgresql://USERNAME:[PASSWORD]@localhost:5432/graph-node-testnet \
+    --ipfs 127.0.0.1:5001 \
     --ethereum-rpc rinkeby-infura:https://rinkeby.infura.io 
 
 ```
