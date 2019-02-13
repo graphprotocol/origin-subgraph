@@ -1,23 +1,18 @@
 {
-  "name": "origin-subgraph",
+  "name": "graphprotocol/origin",
   "version": "1.0.0",
   "repository": "https://github.com/graphprotocol/origin-subgraph",
   "license": "MIT",
   "scripts": {
-    "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
-    "create-subgraph": "graph create origin-subgraph --node http://127.0.0.1:8020",
-    "create-hosted": "graph create origin --node https://api.thegraph.com/deploy/",
-    "create-staging": "graph create origin_test --node https://api.staging.thegraph.com/deploy/",
-    "build": "graph build subgraph.yaml",
-    "build-ipfs": "graph build --ipfs http://localhost:5001 subgraph.yaml",
-    "build-wast": "graph build -t wast subgraph.yaml",
-    "deploy": "graph deploy --debug origin-subgraph --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
-    "deploy-hosted": "graph deploy --debug graphprotocol/origin --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/ --access-token 92e3cff402c849bbb19a6765c5acc34b",
-    "deploy-staging": "graph deploy --debug davekaj/origin_test --ipfs https://api.staging.thegraph.com/ipfs/api/v0/ --node https://api.staging.thegraph.com/deploy/ --access-token "
+    "codegen": "graph codegen --output-dir src/types/",
+    "create-local": "graph create graphprotocol/origin --node http://127.0.0.1:8020",
+    "build": "graph build",
+    "deploy-local": "graph deploy graphprotocol/origin --debug --ipfs http://localhost:5001/api/v0/ --node http://127.0.0.1:8020",
+    "deploy": "graph deploy graphprotocol/origin --debug --ipfs https://api.thegraph.com/ipfs/api/v0/ --node https://api.thegraph.com/deploy/",
+    "watch-local": "graph deploy graphprotocol/uniswap --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "https://github.com/graphprotocol/graph-cli",
-    "@graphprotocol/graph-ts": "https://github.com/graphprotocol/graph-ts"
+    "@graphprotocol/graph-cli": "^0.7.1",
+    "@graphprotocol/graph-ts": "^0.5.1"
   }
 }
-
