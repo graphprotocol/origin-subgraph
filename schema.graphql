@@ -9,23 +9,25 @@ type Listing @entity {
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")     # Records the single events that can be emitted as extra, and effect no storage
     extraDataCount: Int!                                                        # used to derive a relation to the ListingExtraData
 
-    # Below are data grabbed from IPFS
+    # Below are data grabbed from IPFS. These must allow null fields, since ipfs.cat()
+    # Will sometimes timeout, and return null
     price: String
     currency: String
     commissionAmount: String
     commissionCurrency: String
     commissionPerUnit: String
     commissionPerUnitCurrency: String
-    schemaId: String!
-    listingType: String!
-    category: String!
-    subCategory: String!
-    language: String!
-    title: String!
-    description: String!
-    unitsTotal: BigInt!
+    schemaId: String
+    listingType: String
+    category: String
+    subCategory: String
+    language: String
+    title: String
+    description: String
+    unitsTotal: BigInt
     dappSchemaId: String
     media: [Media!]! @derivedFrom(field: "listingID")
+    ipfsCatSuccess: Boolean!        # true if cat worked, false if not (all ipfs data fields will be null)
 }
 
 # Array of images on IPFS
@@ -66,14 +68,16 @@ type Offer @entity {
     disputer: String        # extra field, so we can store if buyer or seller started dispute
     ruling: BigInt          # only set if it gets ruled - 0: Seller, 1: Buyer, 2: Com + Seller, 3: Com + Buyer
 
-    # Below are data grabbed from IPFS
-    schemaId: String!
-    listingType: String!
-    unitsPurchased: BigInt!
+    # Below are data grabbed from IPFS. These must allow null fields, since ipfs.cat()
+    # Will sometimes timeout, and return null
+    schemaId: String
+    listingType: String
+    unitsPurchased: BigInt
     price: String
     currency: String
     commissionPrice: String
     commissionCurrency: String
+    ipfsCatSuccess: Boolean!        # true if cat worked, false if not (all ipfs data fields will be null)
 
     # Extra Data
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID") # Records the single events that can be emitted as extra, and effect no storage

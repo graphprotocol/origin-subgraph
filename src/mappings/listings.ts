@@ -5,7 +5,7 @@ import {
   json,
 } from '@graphprotocol/graph-ts'
 
-import {addQm}  from "./origin";
+import {addQm} from "./origin";
 
 import {
   ListingCreated,
@@ -61,10 +61,11 @@ export function handleListingCreated(event: ListingCreated): void {
   listing.depositManager = storageListing.value2
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
-
-  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
-  if (event.block.number.toI32() < 7100000) {
-    let getIPFSData = ipfs.cat(base58Hash)
+  let getIPFSData = ipfs.cat(base58Hash)
+  if (getIPFSData == null) {
+    listing.ipfsCatSuccess = false
+  } else {
+    listing.ipfsCatSuccess = true
     let data = json.fromBytes(getIPFSData).toObject()
     listing.schemaId = data.get('schemaId').toString()
     listing.listingType = data.get('listingType').toString()
@@ -88,7 +89,7 @@ export function handleListingCreated(event: ListingCreated): void {
     }
 
     let cpu = data.get('commissionPerUnit')
-    if (cpu  != null) {
+    if (cpu != null) {
       let cpuObject = cpu.toObject()
       listing.commissionPerUnit = cpuObject.get('amount').toString()
       listing.commissionPerUnitCurrency = cpuObject.get('currency').toString()
@@ -96,15 +97,15 @@ export function handleListingCreated(event: ListingCreated): void {
 
     // Creating dappSchemaId, if it exists
     let dappSchemaId = data.get('dappSchemaId')
-    if (dappSchemaId != null){
+    if (dappSchemaId != null) {
       listing.dappSchemaId = dappSchemaId.toString()
     }
 
     // Creating the media array, if it exists
     let media = data.get('media')
-    if (media != null){
+    if (media != null) {
       let mediaArray = media.toArray()
-      for (let i = 0; i <mediaArray.length; i++){
+      for (let i = 0; i < mediaArray.length; i++) {
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
         mediaEntity.listingID = id
@@ -135,10 +136,11 @@ export function handleListingUpdated(event: ListingUpdated): void {
   let base58Hash = hexHash.toBase58() // imported crypto function
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
-
-  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
-  if (event.block.number.toI32() < 7090000) {
-    let getIPFSData = ipfs.cat(base58Hash)
+  let getIPFSData = ipfs.cat(base58Hash)
+  if (getIPFSData == null) {
+    listing.ipfsCatSuccess = false
+  } else {
+    listing.ipfsCatSuccess = true
     let data = json.fromBytes(getIPFSData).toObject()
     listing.schemaId = data.get('schemaId').toString()
     listing.listingType = data.get('listingType').toString()
@@ -162,7 +164,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
     }
 
     let cpu = data.get('commissionPerUnit')
-    if (cpu  != null) {
+    if (cpu != null) {
       let cpuObject = cpu.toObject()
       listing.commissionPerUnit = cpuObject.get('amount').toString()
       listing.commissionPerUnitCurrency = cpuObject.get('currency').toString()
@@ -170,15 +172,15 @@ export function handleListingUpdated(event: ListingUpdated): void {
 
     // Creating dappSchemaId, if it exists
     let dappSchemaId = data.get('dappSchemaId')
-    if (dappSchemaId != null){
+    if (dappSchemaId != null) {
       listing.dappSchemaId = dappSchemaId.toString()
     }
 
     // Creating the media array, if it exists
     let media = data.get('media')
-    if (media != null){
+    if (media != null) {
       let mediaArray = media.toArray()
-      for (let i = 0; i <mediaArray.length; i++){
+      for (let i = 0; i < mediaArray.length; i++) {
         let mediaID = BigInt.fromI32(i).toString().concat('-').concat(base58Hash)
         let mediaEntity = new Media(mediaID)
         mediaEntity.listingID = id
@@ -200,8 +202,8 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
 
   // Note - no need to read IPFS hashes, since all they do is indicate withdrawal
   // For Reference, the two common hashes seen are:
-      // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
-      // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
+  // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
+  // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
   // let hexHash = addQm(event.params.ipfsHash) as Bytes
   // let base58Hash = hexHash.toBase58() // imported crypto function
   listing.save()

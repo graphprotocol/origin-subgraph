@@ -68,10 +68,11 @@ export function handleOfferCreated(event: OfferCreated): void {
   offer.status = storageOffer.value8
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
-
-  // NOTE - holding to 7,100,000 until we can connect to Origin IPFS node through swarm
-  if (event.block.number.toI32() < 7100000) {
-    let getIPFSData = ipfs.cat(base58Hash)
+  let getIPFSData = ipfs.cat(base58Hash)
+  if (getIPFSData == null) {
+    offer.ipfsCatSuccess = false
+  } else {
+    offer.ipfsCatSuccess = true
     let data = json.fromBytes(getIPFSData).toObject()
     offer.schemaId = data.get('schemaId').toString()
     offer.listingType = data.get('listingType').toString()
@@ -132,10 +133,11 @@ export function handleOfferFinalized(event: OfferFinalized): void {
   let base58Hash = hexHash.toBase58() // imported crypto function
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
-
-  // NOTE - holding to 7,090,000 until we can connect to Origin IPFS node through swarm
-  if (event.block.number.toI32() < 7100000) {
-    let getIPFSData = ipfs.cat(base58Hash)
+  let getIPFSData = ipfs.cat(base58Hash)
+  if (getIPFSData == null) {
+    offer.ipfsCatSuccess = false
+  } else {
+    offer.ipfsCatSuccess = true
     let data = json.fromBytes(getIPFSData).toObject()
     let review = new Review(base58Hash)
     review.blockNumber = event.block.number
