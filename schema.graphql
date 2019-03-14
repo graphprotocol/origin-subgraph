@@ -103,13 +103,6 @@ type OfferExtraData @entity {
     ipfsHashBase58: String!
 }
 
-# Look up listings and offers by user
-type User @entity {
-    id: ID!
-    listings: [Listing!]! @derivedFrom(field: "seller")
-    offers: [Offer!]! @derivedFrom(field: "buyer")
-}
-
 # A list of addresses, that are valid, and a placeholder ID
 type AllowedAffiliate @entity {
     id: ID!
@@ -121,4 +114,40 @@ type AllowedAffiliate @entity {
 type MarketplaceData @entity {
     id: ID! #ipfs hash
     party: Bytes!
+}
+
+# Look up listings and offers by user
+type User @entity {
+    id: ID!
+    listings: [Listing!]! @derivedFrom(field: "seller")
+    offers: [Offer!]! @derivedFrom(field: "buyer")
+
+    ipfsCatSuccess: Boolean
+    schemaId: String!
+    profile: UserProfile!
+    attestations: [Attestation!]!
+}
+
+type UserProfile @entity {
+    id: ID!     # eth address
+    firstName: String!
+    lastName: String!
+    description: String!
+    avatar: String!
+    schemaId: String!
+}
+
+type Attestation @entity {
+    id: ID!                 # concatenation of eth address and method of attestation and the issuer i.e. Origin-Protocol-email-0xabc....
+    schemaId: String!
+    issuerName: String!
+    issuerURL: String!
+    issuerAddress: String!
+    issueDate: String!
+    method: String!
+    verified: Boolean!
+    signature: String!
+    signatureVersion: String!
+
+
 }

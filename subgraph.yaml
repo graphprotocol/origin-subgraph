@@ -61,3 +61,24 @@ dataSources:
           handler: handleOfferRuling
         - event: OfferData(address,uint256,uint256,bytes32)
           handler: handleOfferData
+  - kind: ethereum/contract
+    name: IdentityEvents
+    network: mainnet
+    source:
+      address: '0x8Ac16c08105DE55A02E2b7462b1EeC6085fA4d86'
+      abi: IdentityEvents
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.1
+      language: wasm/assemblyscript
+      file: ./src/mappings/origin.ts
+      entities:
+        - User
+      abis:
+        - name: IdentityEvents
+          file: ./abis/IdentityEvents.json
+      eventHandlers:
+        - event: IdentityUpdated(address,bytes32)
+          handler: handleIdentityUpdated
+        - event: IdentityDeleted(address)
+          handler: handleIdentityDeleted
