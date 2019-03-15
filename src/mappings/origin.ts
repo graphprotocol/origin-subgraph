@@ -68,5 +68,3 @@ export function addQm(a: ByteArray): ByteArray {
   }
   return out as ByteArray
 }
-
-// A lot of the JSON fields are not required for the origin schemas.

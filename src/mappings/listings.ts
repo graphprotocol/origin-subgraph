@@ -74,7 +74,7 @@ export function handleListingCreated(event: ListingCreated): void {
     listing.language = data.get('language').toString()
     listing.title = data.get('title').toString()
     listing.description = data.get('description').toString()
-    listing.unitsTotal = data.get('unitsTotal').toBigInt()
+    listing.unitsTotal = data.get('unitsTotal').isNull() ? null : data.get('unitsTotal').toBigInt()
     listing.media = []
 
     let po = data.get('price')
@@ -153,7 +153,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
     listing.language = data.get('language').toString()
     listing.title = data.get('title').toString()
     listing.description = data.get('description').toString()
-    listing.unitsTotal = data.get('unitsTotal').toBigInt()
+    listing.unitsTotal = data.get('unitsTotal').isNull() ? null : data.get('unitsTotal').toBigInt()
     listing.media = []
 
     let po = data.get('price')

@@ -1,3 +1,4 @@
+# Required Fields according to listing schema = schemaId, listingType, category, subCategory, language, title, description
 type Listing @entity {
     id: ID!
     blockNumber: BigInt!
@@ -49,6 +50,7 @@ type ListingExtraData @entity {
     base58Hash: String!
 }
 
+# Required Fields according to offer schema = schemaId, listingType, totalPrice, commission
 type Offer @entity {
     id: ID!                 # a concatenation of the listing ID and the Offer location in the Offer[]
     listingID: String!

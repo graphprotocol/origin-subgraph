@@ -78,7 +78,7 @@ export function handleOfferCreated(event: OfferCreated): void {
     let data = json.fromBytes(getIPFSData).toObject()
     offer.schemaId = data.get('schemaId').toString()
     offer.listingType = data.get('listingType').toString()
-    offer.unitsPurchased = data.get('unitsPurchased').toBigInt()
+    offer.unitsPurchased = data.get('unitsPurchased').isNull() ? null : data.get('unitsPurchased').toBigInt()
 
     // Creating finalizes, if it exists
     let finalizes = data.get('finalizes')
