@@ -55,6 +55,8 @@ export function handleOfferCreated(event: OfferCreated): void {
 
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
+  offer.base58Hash = base58Hash
+
 
   // Direct call the contract for Offer storage values
   let smartContract = Marketplace.bind(event.address)
@@ -267,8 +269,8 @@ export function handleOfferData(event: OD): void {
   let extraData = new OfferExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  extraData.ipfsHashBase58 = base58Hash
-  extraData.ipfsHashBytes = event.params.ipfsHash
+  extraData.base58Hash = base58Hash
+  extraData.bytesHash = event.params.ipfsHash
   extraData.sender = event.params.party
   extraData.offerID = offerID
   extraData.save()

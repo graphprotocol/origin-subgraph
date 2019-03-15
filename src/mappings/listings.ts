@@ -52,7 +52,7 @@ export function handleListingCreated(event: ListingCreated): void {
 
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-
+  listing.base58Hash = base58Hash
 
   // Direct call the contract for deposit and depositManager
   let smartContract = Marketplace.bind(event.address)
@@ -77,9 +77,12 @@ export function handleListingCreated(event: ListingCreated): void {
     listing.unitsTotal = data.get('unitsTotal').toBigInt()
     listing.media = []
 
-    let priceObject = data.get('price').toObject()
-    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string
-    listing.currency = priceObject.get('currency').toString()
+    let po = data.get('price')
+    if (po != null) {
+      let priceObject = data.get('price').toObject()
+      listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
+      listing.currency = priceObject.get('currency').toString()
+    }
 
     let c = data.get('commission')
     if (c != null) {
@@ -134,6 +137,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
 
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
+  listing.base58Hash = base58Hash
 
   //////////////// JSON PARSING BELOW /////////////////////////////////////
   let getIPFSData = ipfs.cat(base58Hash)
@@ -152,10 +156,12 @@ export function handleListingUpdated(event: ListingUpdated): void {
     listing.unitsTotal = data.get('unitsTotal').toBigInt()
     listing.media = []
 
-    let priceObject = data.get('price').toObject()
-    listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
-    listing.currency = priceObject.get('currency').toString()
-
+    let po = data.get('price')
+    if (po != null) {
+      let priceObject = data.get('price').toObject()
+      listing.price = priceObject.get('amount').toString() // Can't use toBigInt(), since it is already kind STRING. so for now we store it as a string too
+      listing.currency = priceObject.get('currency').toString()
+    }
     let c = data.get('commission')
     if (c != null) {
       let commissionObject = c.toObject()
@@ -241,8 +247,8 @@ export function handleListingData(event: LD): void {
   let extraData = new ListingExtraData(extraDataID)
   let hexHash = addQm(event.params.ipfsHash) as Bytes
   let base58Hash = hexHash.toBase58() // imported crypto function
-  extraData.ipfsHashBase58 = base58Hash
-  extraData.ipfsHashBytes = event.params.ipfsHash
+  extraData.base58Hash = base58Hash
+  extraData.bytesHash = event.params.ipfsHash
   extraData.sender = event.params.party
   extraData.listingID = id
   extraData.save()

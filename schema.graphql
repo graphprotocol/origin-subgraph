@@ -9,6 +9,7 @@ type Listing @entity {
     listingExtraData: [ListingExtraData!]! @derivedFrom(field: "listingID")     # Records the single events that can be emitted as extra, and effect no storage
     extraDataCount: Int!                                                        # used to derive a relation to the ListingExtraData
 
+    base58Hash: String!  # represents the latest hash to update the listing
     # Below are data grabbed from IPFS. These must allow null fields, since ipfs.cat()
     # Will sometimes timeout, and return null
     price: String
@@ -44,8 +45,8 @@ type ListingExtraData @entity {
     id: ID!                 # concatenation of the listing ID and the amount of ListingExtraDatas
     listingID: String!
     sender: Bytes!
-    ipfsHashBytes: Bytes!
-    ipfsHashBase58: String!
+    bytesHash: Bytes!
+    base58Hash: String!
 }
 
 type Offer @entity {
@@ -62,6 +63,8 @@ type Offer @entity {
     arbitrator: Bytes!      # address that settles disputes
     finalizes: BigInt       # According to origin docs, this isnt a required field
     status: Int!            # 0 = undefined, 1 = created, 2 = accepted, 3 = disputed. 4 = finalized, 5 = withdrawn (4 and 5 are supersets of smart contract storage)
+
+    base58Hash: String!  # represents the latest hash to update the offer
 
     # optional from the schema
     reviews: [Review!]! @derivedFrom(field: "offerID")
@@ -99,8 +102,8 @@ type OfferExtraData @entity {
     id: ID!                 # Concatenation of offerID and length of OfferExtraDatas
     offerID: String!
     sender: Bytes!
-    ipfsHashBytes: Bytes!
-    ipfsHashBase58: String!
+    bytesHash: Bytes!
+    base58Hash: String!
 }
 
 # A list of addresses, that are valid, and a placeholder ID
@@ -119,35 +122,35 @@ type MarketplaceData @entity {
 # Look up listings and offers by user
 type User @entity {
     id: ID!
-    listings: [Listing!]! @derivedFrom(field: "seller")
-    offers: [Offer!]! @derivedFrom(field: "buyer")
+    listings: [Listing!] @derivedFrom(field: "seller")
+    offers: [Offer!] @derivedFrom(field: "buyer")
 
     ipfsCatSuccess: Boolean
-    schemaId: String!
-    profile: UserProfile!
-    attestations: [Attestation!]!
+    schemaId: String
+    profile: UserProfile
+    attestations: [Attestation!]
 }
 
 type UserProfile @entity {
     id: ID!     # eth address
-    firstName: String!
-    lastName: String!
-    description: String!
-    avatar: String!
-    schemaId: String!
+    firstName: String
+    lastName: String
+    description: String
+    avatar: String
+    schemaId: String
+    base58Hash: String
 }
 
 type Attestation @entity {
     id: ID!                 # concatenation of eth address and method of attestation and the issuer i.e. Origin-Protocol-email-0xabc....
-    schemaId: String!
-    issuerName: String!
-    issuerURL: String!
-    issuerAddress: String!
-    issueDate: String!
-    method: String!
-    verified: Boolean!
-    signature: String!
-    signatureVersion: String!
-
-
+    schemaId: String
+    issuerName: String
+    issuerURL: String
+    issuerAddress: String
+    issueDate: String
+    method: String
+    verified: Boolean
+    signature: String
+    signatureVersion: String
+    base58Hash: String
 }

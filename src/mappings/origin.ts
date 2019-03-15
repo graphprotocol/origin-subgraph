@@ -23,6 +23,11 @@ import {
   handleOfferData,
 } from "./offers";
 
+import {
+  handleIdentityDeleted,
+  handleIdentityUpdated
+} from "./identity";
+
 export {
   handleListingCreated,
   handleListingUpdated,
@@ -42,6 +47,9 @@ export {
   handleOfferDisputed,
   handleOfferRuling,
   handleOfferData,
+
+  handleIdentityDeleted,
+  handleIdentityUpdated
 }
 
 
@@ -60,3 +68,5 @@ export function addQm(a: ByteArray): ByteArray {
   }
   return out as ByteArray
 }
+
+// A lot of the JSON fields are not required for the origin schemas.
