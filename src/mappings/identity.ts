@@ -51,20 +51,20 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
         let verified: boolean
 
 
-        let sms = attestationMethod.get('sms').toString()
-        if (sms != null) {
+        let sms = attestationMethod.get('sms').isNull()
+        if (sms == false) {
           verificationMethod = 'sms'
           let phone = attestation.get('phone').toObject()
           verified = phone.get('verified').toBool()
         } else {
-          let email = attestationMethod.get('email').toString()
-          if (email != null) {
+          let email = attestationMethod.get('email').isNull()
+          if (email == false) {
             verificationMethod = 'email'
             let checkEmailValidated = attestation.get('email').toObject()
             verified = checkEmailValidated.get('verified').toBool()
           } else {
-            let oauth = attestationMethod.get('oauth').toString()
-            if (oauth != null) {
+            let oauth = attestationMethod.get('oAuth').isNull()
+            if (oauth == false) {
               let site = attestation.get('site').toObject()
               verificationMethod = site.get('siteName').toString()
               verified = true
@@ -76,6 +76,7 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
             }
           }
         }
+
         let attestationID = issuerName.concat(verificationMethod.concat(id))
         let newAttestation = new Attestation(attestationID)
         newAttestation.schemaId = attestationSchemaID
