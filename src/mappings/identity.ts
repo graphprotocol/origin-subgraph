@@ -10,15 +10,11 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
   let base58Hash = hexHash.toBase58() // imported crypto function
 
   let getIPFSData = ipfs.cat(base58Hash)
-  if (getIPFSData == null) {
-    user.ipfsCatSuccess = false
-  } else {
-    user.ipfsCatSuccess = true
+  if (getIPFSData != null) {
     let jsonIdentity = json.fromBytes(getIPFSData).toObject()
     user.schemaId = jsonIdentity.get('schemaId').toString()
     user.save()
 
-    // TODO - WHAT WAS PROFILE V1?
     let jsonProfile = jsonIdentity.get('profile').toObject()
     let profile = new UserProfile(jsonProfile.get('ethAddress').toString())
     profile.firstName = jsonProfile.get('firstName').isNull() ? null : jsonProfile.get('firstName').toString()
@@ -27,6 +23,7 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
     profile.avatar = jsonProfile.get('avatar').isNull() ? null : jsonProfile.get('avatar').toString()
     profile.schemaId = jsonProfile.get('schemaId').toString()
     profile.base58Hash = base58Hash
+    profile.deleted = false
     profile.save()
 
     let jsonAttestations = jsonIdentity.get('attestations').toArray()
@@ -69,17 +66,24 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
               verificationMethod = site.get('siteName').toString()
               verified = true
             } else {
-              // Right now, there are more options for JSON schema, but they aren't in the origin app, so this won't be emitted
-              // It is likely the schema will change before it does
-              verificationMethod = 'other'
-              verified = false
+              let pau = attestationMethod.get('pubAuditableUrl').isNull()
+              if (pau == false) {
+                let site = attestation.get('site').toObject()
+                verificationMethod = site.get('siteName').toString()
+                verified = true
+              } else {
+                // Right now, there are more options for JSON schema, but they aren't in the origin app, so this won't be emitted
+                // It is likely the schema will change before it does
+                verificationMethod = 'other'
+                verified = false
+              }
             }
           }
         }
-
-        let attestationID = issuerName.concat(verificationMethod.concat(id))
+        let attestationID = issuerName.concat('-').concat(verificationMethod.concat('-').concat(id))
         let newAttestation = new Attestation(attestationID)
         newAttestation.schemaId = attestationSchemaID
+        newAttestation.userAddress = event.params.account
         newAttestation.issuerName = issuerName
         newAttestation.issuerURL = issuerURL
         newAttestation.issuerAddress = issuerAddress
@@ -98,11 +102,12 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
   }
 }
 
+// We make a field that indicates it is deleted
+// This will tell the app DO NOT RENDER profile info
+// if the identity is updated again, we set deleted to false, and show the new info
 export function handleIdentityDeleted(event: IdentityDeleted): void {
   let id = event.params.account.toHex()
-  let user = new User(id)
-
-  // TODO - set all the schema fields to zero.
-
+  let user = new UserProfile(id)
+  user.deleted = true
   user.save()
 }

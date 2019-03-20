@@ -29,7 +29,6 @@ type Listing @entity {
     unitsTotal: BigInt
     dappSchemaId: String
     media: [Media!]! @derivedFrom(field: "listingID")
-    ipfsCatSuccess: Boolean!        # true if cat worked, false if not (all ipfs data fields will be null)
 }
 
 # Array of images on IPFS
@@ -82,7 +81,6 @@ type Offer @entity {
     currency: String
     commissionPrice: String
     commissionCurrency: String
-    ipfsCatSuccess: Boolean!        # true if cat worked, false if not (all ipfs data fields will be null)
 
     # Extra Data
     offerExtraData: [OfferExtraData!]! @derivedFrom(field: "offerID") # Records the single events that can be emitted as extra, and effect no storage
@@ -126,11 +124,10 @@ type User @entity {
     id: ID!
     listings: [Listing!] @derivedFrom(field: "seller")
     offers: [Offer!] @derivedFrom(field: "buyer")
-
-    ipfsCatSuccess: Boolean
+    originTokenBalance: BigInt
     schemaId: String
-    profile: UserProfile
-    attestations: [Attestation!]
+    profile: UserProfile @derivedFrom(field: "id")
+    attestations: [Attestation!] @derivedFrom(field: "userAddress")
 }
 
 type UserProfile @entity {
@@ -141,10 +138,12 @@ type UserProfile @entity {
     avatar: String
     schemaId: String
     base58Hash: String
+    deleted: Boolean!
 }
 
 type Attestation @entity {
     id: ID!                 # concatenation of eth address and method of attestation and the issuer i.e. Origin-Protocol-email-0xabc....
+    userAddress: Bytes!
     schemaId: String
     issuerName: String
     issuerURL: String

@@ -74,59 +74,166 @@ This subgraph has already been deploy to the hosted service, and you can see it 
 
 Below are a few ways to show how to query the origin-subgraph for data. 
 
-### Querying all possible data that is stored in the subgraph
-The query below shows all the information that is possible to query, but is limited to the first 10 instances. There are many other filtering options that can be used, just check out the [querying api](https://github.com/graphprotocol/graph-node/blob/master/docs/graphql-api.md).
-
-This query will return the first 5 listings and offers. See `graphql.schema` for a complete list of everything that can be queried. 
+### Querying all User Information
+The query below shows all the information for one user. This would represent what is on the users profile page in the Origin Dapp. There are many other filtering options that can be used, just check out the [querying api](https://github.com/graphprotocol/graph-node/blob/master/docs/graphql-api.md).
 
 ```graphql
 {
-  listings(first: 5) {
+  user(id: "0x6c6e93874216112ef12a0d04e2679ecc6c3625cc"){
     id
-    seller
-    blockNumber
-    depositManager
-    deposit
-    status
-    price
-    currency
-    commissionAmount
-    commissionCurrency
-    schemaId
-    listingType
-    category
-    description
-    subCategory
-    language
-    title
-    unitsTotal
-    media {
-      url
-      contentType
+    attestations{
+      id
+      schemaId
+      userAddress
+      issuerURL
+      issueDate
+      issuerName
+      issuerAddress
+      method
+      verified
+      signature
+      signatureVersion
+      base58Hash    
     }
-  }
-  offers(first: 5) {
-    id
-    listingID
-    blockNumber
-    value
-    commission
-    refund
-    currency
-    buyer
-    affiliate
-    arbitrator
-    finalizes
-    status
-    price
-    currency
-    commissionPrice
-    commissionCurrency
+    listings{
+      id
+      blockNumber
+      seller
+      depositManager
+      deposit
+      status
+      offers{
+        id
+        listingID
+        blockNumber
+        value
+        commission
+        refund
+        buyer
+        affiliate
+        arbitrator
+        finalizes
+        status
+        base58Hash
+        reviews{
+          id
+          blockNumber
+          schemaId
+          rating
+          text
+          offerID
+        }
+        disputer
+        ruling
+        schemaId
+        listingType
+        unitsPurchased
+        price
+        currency
+        commissionPrice
+        commissionCurrency
+        ipfsCatSuccess
+        offerExtraData{
+          id
+          offerID
+          sender
+          bytesHash
+          base58Hash
+        }
+        extraDataCount
+      }
+      extraDataCount
+      base58Hash
+      price
+      currency
+      commissionAmount
+      commissionCurrency
+      commissionPerUnit
+      commissionPerUnitCurrency
+      schemaId
+      listingType
+      category
+      subCategory
+      language
+      title
+      description
+      unitsTotal
+      dappSchemaId
+      media{
+        id
+        url
+        contentType
+        listingID
+      }
+      ipfsCatSuccess
+    }
+    profile{
+      id
+      firstName
+      lastName
+      description
+      avatar
+      schemaId
+      base58Hash
+    }
     schemaId
-    listingType
-    unitsPurchased
+    ipfsCatSuccess
   }
 }
 ```
-The command above can be copy pasted into the Graphiql interface in your browser at `127.0.0.1:8000`.
 
+### Query all Information on a Listing
+This query will return all data related to a listing, which would be used for viewing a listing in the Origin Dapp. 
+
+```graphql
+{
+  listing(id: "713") {
+    id
+    blockNumber
+    seller
+    depositManager
+    deposit
+    status
+    offers {
+      id
+      listingID
+      blockNumber
+      value
+      commission
+      refund
+      buyer
+      affiliate
+      arbitrator
+      finalizes
+      status
+      base58Hash
+      reviews {
+        id
+        blockNumber
+        schemaId
+        rating
+        text
+        offerID
+      }
+      disputer
+      ruling
+      schemaId
+      listingType
+      unitsPurchased
+      price
+      currency
+      commissionPrice
+      commissionCurrency
+      ipfsCatSuccess
+      offerExtraData {
+        id
+        offerID
+        sender
+        bytesHash
+        base58Hash
+      }
+      extraDataCount
+    }
+  }
+}
+```

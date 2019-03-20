@@ -71,7 +71,7 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.1
       language: wasm/assemblyscript
-      file: ./src/mappings/origin.ts
+      file: ./src/mappings/identity.ts
       entities:
         - User
       abis:
@@ -82,3 +82,26 @@ dataSources:
           handler: handleIdentityUpdated
         - event: IdentityDeleted(address)
           handler: handleIdentityDeleted
+  - kind: ethereum/contract
+    name: OriginToken
+    network: mainnet
+    source:
+      address: "0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26"
+      abi: OriginToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.1
+      language: wasm/assemblyscript
+      entities:
+        - User
+      abis:
+        - name: OriginToken
+          file: ./abis/OriginToken.json
+      eventHandlers:
+#        - event: Burn(address,uint256)
+#          handler: handleBurn
+        - event: Mint(address,uint256)
+          handler: handleMint
+        - event: Transfer(address,address,uint256)
+          handler: handleTransfer
+      file: ./src/mappings/originToken.ts

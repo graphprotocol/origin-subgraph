@@ -23,11 +23,6 @@ import {
   handleOfferData,
 } from "./offers";
 
-import {
-  handleIdentityDeleted,
-  handleIdentityUpdated
-} from "./identity";
-
 export {
   handleListingCreated,
   handleListingUpdated,
@@ -47,9 +42,6 @@ export {
   handleOfferDisputed,
   handleOfferRuling,
   handleOfferData,
-
-  handleIdentityDeleted,
-  handleIdentityUpdated
 }
 
 
