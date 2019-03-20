@@ -98,8 +98,6 @@ dataSources:
         - name: OriginToken
           file: ./abis/OriginToken.json
       eventHandlers:
-#        - event: Burn(address,uint256)
-#          handler: handleBurn
         - event: Mint(address,uint256)
           handler: handleMint
         - event: Transfer(address,address,uint256)

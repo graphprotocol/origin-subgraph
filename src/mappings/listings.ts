@@ -204,8 +204,7 @@ export function handleListingWithdrawn(event: ListingWithdrawn): void {
   // For Reference, the two common hashes seen are:
   // QmPvzW94qWJKPkgKipRNVpQEDhHBg8SSw4chjF7iadBMvf
   // Qmf4vxsjQypTHZ9yPKXgyqDu2MF5cxcUwYZkfzjYVLHHt9
-  // let hexHash = addQm(event.params.ipfsHash) as Bytes
-  // let base58Hash = hexHash.toBase58() // imported crypto function
+
   listing.save()
 }
 
@@ -224,8 +223,6 @@ export function handleListingArbitrated(event: ListingArbitrated): void {
   // Note - no need to read IPFS hashes, since none exist yet, and it is unclear what the
   // fields would be here, and the naming is not clear on what ListingArbitrated has for a schema
   // Push to array to store IPFS hash (in base58)
-  // let hexHash = addQm(event.params.ipfsHash) as Bytes
-  // let base58Hash = hexHash.toBase58() // imported crypto function
 
   listing.save()
 }

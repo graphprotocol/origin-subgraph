@@ -1,10 +1,10 @@
-import {BigInt, Address} from '@graphprotocol/graph-ts'
 import {
   Mint,
-  Burn,
   Transfer
 } from '../types/OriginToken/OriginToken'
 import {User} from '../types/schema'
+
+// NOTE - no need to source event Burn, because it also triggers a transfer event no matter what. Burn just emits duplicate info
 
 // minting just disguises a transfer of tokens from address(0) to the TO address. It also emits a transfer
 // Therefore, mint should give tokens to the 0 address, and allow transfer to transfer it to the receiver
@@ -21,7 +21,6 @@ export function handleMint(event: Mint): void {
   }
   user.save()
 }
-
 
 export function handleTransfer(event: Transfer): void {
   let userToID = event.params.to.toHex()
@@ -44,7 +43,3 @@ export function handleTransfer(event: Transfer): void {
   userFrom.originTokenBalance = userFrom.originTokenBalance.minus(event.params.value)
   userFrom.save()
 }
-
-// No need to use handleBurn, because it also triggers a transfer event no matter what. Burn just emits duplicate info
-// export function handleBurn(event: Burn): void {
-// }
