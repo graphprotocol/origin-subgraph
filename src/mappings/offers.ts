@@ -72,7 +72,7 @@ export function handleOfferCreated(event: OfferCreated): void {
   //////////////// JSON PARSING BELOW /////////////////////////////////////
   let getIPFSData = ipfs.cat(base58Hash)
   if (getIPFSData != null) {
-    let data = json.fromBytes(getIPFSData).toObject()
+    let data = json.fromBytes(getIPFSData as Bytes).toObject()
     offer.schemaId = data.get('schemaId').toString()
     offer.listingType = data.get('listingType').toString()
     offer.unitsPurchased = data.get('unitsPurchased').isNull() ? null : data.get('unitsPurchased').toBigInt()
@@ -132,7 +132,7 @@ export function handleOfferFinalized(event: OfferFinalized): void {
   //////////////// JSON PARSING BELOW /////////////////////////////////////
   let getIPFSData = ipfs.cat(base58Hash)
   if (getIPFSData != null) {
-    let data = json.fromBytes(getIPFSData).toObject()
+    let data = json.fromBytes(getIPFSData as Bytes).toObject()
     let review = new Review(base58Hash)
     review.blockNumber = event.block.number
     review.offerID = offerID

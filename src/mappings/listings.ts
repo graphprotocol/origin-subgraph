@@ -63,7 +63,7 @@ export function handleListingCreated(event: ListingCreated): void {
   //////////////// JSON PARSING BELOW /////////////////////////////////////
   let getIPFSData = ipfs.cat(base58Hash)
   if (getIPFSData != null) {
-    let data = json.fromBytes(getIPFSData).toObject()
+    let data = json.fromBytes(getIPFSData as Bytes).toObject()
     listing.schemaId = data.get('schemaId').toString()
     listing.listingType = data.get('listingType').toString()
     listing.category = data.get('category').toString()
@@ -139,7 +139,7 @@ export function handleListingUpdated(event: ListingUpdated): void {
   //////////////// JSON PARSING BELOW /////////////////////////////////////
   let getIPFSData = ipfs.cat(base58Hash)
   if (getIPFSData != null) {
-    let data = json.fromBytes(getIPFSData).toObject()
+    let data = json.fromBytes(getIPFSData as Bytes).toObject()
     listing.schemaId = data.get('schemaId').toString()
     listing.listingType = data.get('listingType').toString()
     listing.category = data.get('category').toString()
