@@ -11,7 +11,7 @@ export function handleIdentityUpdated(event: IdentityUpdated): void {
 
   let getIPFSData = ipfs.cat(base58Hash)
   if (getIPFSData != null) {
-    let jsonIdentity = json.fromBytes(getIPFSData).toObject()
+    let jsonIdentity = json.fromBytes(getIPFSData as Bytes).toObject()
     user.schemaId = jsonIdentity.get('schemaId').toString()
     user.save()
 

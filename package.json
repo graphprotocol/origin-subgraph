@@ -8,11 +8,11 @@
     "create-local": "graph create graphprotocol/origin --node http://127.0.0.1:8020",
     "build": "graph build",
     "deploy-local": "graph deploy graphprotocol/origin --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
-    "deploy": "graph deploy graphprotocol/origin --debug --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+    "deploy": "graph deploy graphprotocol/origin --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "watch-local": "graph deploy graphprotocol/origin --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.11.2",
-    "@graphprotocol/graph-ts": "^0.11.0"
+    "@graphprotocol/graph-cli": "^0.12.0",
+    "@graphprotocol/graph-ts": "^0.12.0"
   }
 }

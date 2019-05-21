@@ -69,7 +69,7 @@ dataSources:
       abi: IdentityEvents
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.1
+      apiVersion: 0.0.2
       language: wasm/assemblyscript
       file: ./src/mappings/identity.ts
       entities:
@@ -90,7 +90,7 @@ dataSources:
       abi: OriginToken
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.1
+      apiVersion: 0.0.2
       language: wasm/assemblyscript
       entities:
         - User
